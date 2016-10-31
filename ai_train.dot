@@ -1,0 +1,5 @@
+digraph UCT{
+graph [splines=line];
+edge [dir="none"];
+node [style="filled",label="",shape=point];
+}
