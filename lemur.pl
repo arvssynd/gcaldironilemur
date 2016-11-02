@@ -107,7 +107,7 @@ setting(score,ll).
 %setting(mcts_iter,100).
 setting(mcts_beamsize,3).
 setting(mcts_visits,1e20).
-%setting(max_rules,6).
+setting(max_rules,5).
 
 setting(max_var,4).
 
@@ -456,10 +456,10 @@ backup_amaf(NodeID,Reward,ParentsTranspose):-
 	 Visited1 is Visited
 %	 format("~w- ",[NodeID])	 
 	;
-	 SigmoidValue is 1 / (1 - PSLL),
-	 ( PSLL = 1  ->
+	 ( PSLL == 1  ->
 		 Backscore1 is Backscore + Reward
 	 ;
+	         SigmoidValue is 1 / (1 - PSLL),
 		 ( Reward > SigmoidValue ->
 			 Backscore1 is Backscore + Reward
 		 ;
@@ -544,7 +544,7 @@ subsume_body(Body,Body1):-
 	subsume_body1(Body,Body1).
 subsume_body1([],_).
 subsume_body1([L|R],Body):-
-	nth(_,Body,L,Rest),
+	nth1(_,Body,L,Rest),
 	subsume_body1(R,Rest).	
 
 
@@ -577,7 +577,7 @@ same_body(Body,Body1):-
 	same_body1(Body,Body1).
 same_body1([],[]).
 same_body1([L|R],Body):-
-	nth(_,Body,L,Rest),
+	nth1(_,Body,L,Rest),
 	same_body1(R,Rest).	
 
 %
@@ -605,8 +605,11 @@ cycle_mcts(K,DB):-
 	% do update with the sigmoid of the Score
 %%%	SigmoidValue is ((1 / (1 + exp(-Reward)))/0.5),
 
-
-		SigmoidValue is 1 / (1 -  Reward),
+                (Reward==1->
+	   	  SigmoidValue=1e20
+		;
+		  SigmoidValue is 1 / (1 -  Reward)
+		),
 
 		( SigmoidValue > 0 ->
 		
@@ -745,7 +748,7 @@ tree_policy(ID,NodeID,DB,Od,Nd):-
 
 
 		( (CLL1 > BestScore, LengthCondition = true) ->
-			%			format("\n\x1B[32m[New best score: ~w ~w]\x1B[0m",[CLL1, BestTheory]),flush_output,
+						format("\n[New best score: ~w ~w]",[CLL1, BestTheory]),flush_output,
 
 
 			retract(mcts_best_score(_)),
@@ -842,7 +845,7 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 
 	
 		( (Score > BestScore, LengthCondition = true) ->
-			%			format("\n\x1B[32m[New best score: ~w ~w]\x1B[0m",[Score, BestTheory]),flush_output,
+					format("\n[New best score: ~w ~w]",[Score, BestTheory]),flush_output,
 
 		
 			retract(mcts_best_score(_)),
@@ -885,7 +888,7 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 
 	
 		( Score > BestScore ->
-			%			format("\n[New best score: ~w ~w]",[Score, BestTheory]),flush_output,
+			format("\n[New best score: ~w ~w]",[Score, BestTheory]),flush_output,
 
 			retract(mcts_best_score(_)),
 			retract(mcts_best_theory(_)),
@@ -914,13 +917,21 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 minmaxvalue(Childs,MinV,MaxV):-
 	Childs = [F|R],
 	node(F, _, _ , _, _, Visits, Reward),
-	V is Reward / Visits,
+	(Visits==0->
+		V is sign(Reward)*1e20
+	;
+		V is Reward / Visits
+	),
 	minmaxvalue(R,V,V,MinV,MaxV).
 
 minmaxvalue([],Min,Max,Min,Max).
 minmaxvalue([C|R],PrevMin,PrevMax,MinV,MaxV):-
 	node(C, _, _ , _, _, Visits, Reward),
-	V is Reward / Visits,
+	(Visits==0->
+		V is sign(Reward)*1e20
+	;
+		V is Reward / Visits
+	),
 	( V > PrevMax ->
 		Max1 is V
 	;
@@ -936,7 +947,11 @@ mean_value_level(Cs,M):-
 	mean_value_level1(Cs,Me),
 	length(Me,L),
 	sum_list(Me,S),
-	M is S / L.
+	(L==0->
+	  M is sign(S)*1e20
+	;
+	  M is S / L
+	).
 mean_value_level1([],[]).
 mean_value_level1([C|R],M1):-
 	node(C, _, _ , 1, _, _Visits, _Reward),
@@ -946,7 +961,11 @@ mean_value_level1([C|R],[M|Rm]):-
 	node(C, _, _ , _, _, Visits, Reward),
 	!,
 	mean_value_level1(R,Rm),
-	M is (Reward / Visits).
+	(Visits==0->
+		M is sign(Reward)*1e20
+	;
+		M is (Reward / Visits)
+	).
 
 /*
 uct(Childs, ParentVisits, BestChild):-
@@ -969,8 +988,12 @@ uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, BestChil
 	( Visits == 0 ->
 		BestChild = Child
 	;
-		setting(mcts_c,C),		
-		UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+		setting(mcts_c,C),
+		(Visits==0->
+			UCT is sign(Reward)*1e20
+		;		
+			UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
+		),
 %%%		format("~w ",[UCT]),flush_output,
 		(UCT > CurrentBestUCT ->
 		 uct(RestChilds, UCT, ParentVisits, Child, BestChild)
@@ -995,10 +1018,14 @@ uct(Childs, ParentVisits, Min, Max, BestChild):-
 %		;
 %		 R is Reward
 %		),
-		R is Reward,
-		AA is ((R / Visits) - Min ) / (Max-Min),
-		BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-		UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+		(Max-Min==0->
+			UCT is sign(R/Visits-Min)*1e20
+		;
+			R is Reward,
+		%AA is ((R / Visits) - Min ) / (Max-Min),
+		%BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+			UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
+		),
 %%%		format("\nID ~w UCT ~w ~w/~w=~w ~w",[FirstChild,UCT,R,Visits,AA,BB]),
 %%%		format("\n\t ~w ~w",[Score,Theory]),
 %%%		format("~w ",[UCT]),
@@ -1018,10 +1045,14 @@ uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max
 %		;
 %		 R is Reward
 %		),
-		R is Reward,
-		AA is ((R / Visits) - Min ) / (Max-Min),
-		BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-		UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+		(Max-Min==0->
+			UCT is sign(R/Visits-Min)*1e20
+		;
+			R is Reward,
+		%AA is ((R / Visits) - Min ) / (Max-Min),
+		%BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+			UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
+		),
 %%%		format("\nID ~w UCT ~w ~w/~w=~w ~w",[Child,UCT,R,Visits,AA,BB]),
 %%%		format("\n\t ~w ~w",[Score,Theory]),		
 %%%		format("~w ",[UCT]),flush_output,
@@ -1066,7 +1097,7 @@ expand(ID, Theory, ParentCLL, DB, NodeID, Childs):-
 
 
 	 ( (CLL > BestScore, LengthCondition = true) ->
-		 %		 format("\n\x1B[32m[New best score: ~w ~w]\x1B[0m",[CLL, BestTheory]),flush_output,		 
+		  format("\n[New best score: ~w ~w]",[CLL, BestTheory]),flush_output,		 
 		 retract(mcts_best_score(_)),
 		 retract(mcts_best_theory(_)),
 		 assert(mcts_best_score(CLL)),
@@ -1098,7 +1129,11 @@ assert_childs([Spec|Rest],P,PCLL,[ID1|Childs]):-
 	ID1 is ID + 1,
 	assert(lastid(ID1)),
 %	SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
-		SigmoidValue is 1 / (1 -  PCLL),	
+	(PCLL==1->
+		SigmoidValue=1e20
+	;
+		SigmoidValue is 1 / (1 -  PCLL)
+	),
 	%format(" ~w",[ID1]),
 %%%	score_theory(Spec,DB,CLL),
 	assert(node(ID1, [], P, 1 , Spec, 1 , SigmoidValue)),
@@ -1132,10 +1167,10 @@ score_theory(Theory0,DB,Score,Theory,R3):-
 		)
 	),
 
-	learn_params(DB, user, Theory, _, CLL),
-/*%%%	format("   Scoring....",[]),flush_output,
-%%%  write_rules(Theory,user_output),   flush_output,
-  generate_clauses(Theory,R2,0,[],Th1),
+	learn_params(DB, user, Theory, R3, CLL),
+%%%	format("   Scoring....",[]),flush_output,
+% write_rules2(R3,user_output),   flush_output,
+/*  generate_clauses(Theory,R2,0,[],Th1),
 %%%	format("\n ~w\n ~w\n ~w",[Theory,R2,Th1]),
   assert_all(Th1),
   assert_all(R2),!,
@@ -1159,12 +1194,10 @@ score_theory(Theory0,DB,Score,Theory,R3):-
 %%%	format("\n Score ~w ~w",[CLL0,CLL]),
   update_theory_par(R2,Par,R3),*/
 	
-  %%%write('Updated refinement'),nl,
-%%  nl,nl,write_rules(R3,user_output), 
+  write3('Updated refinement'),write3('\n'),
+  write_rules3(R3,user_output), 
   Score = CLL,  
 %%%  nl,write('Score (CLL) '),write(Score),nl,nl,nl,
-  retract_all(Th1),
-  retract_all(R2),
 %%%	format(" End",[]),flush_output,
 	!.
 
@@ -1177,7 +1210,11 @@ backup(NodeID,Reward,[Parent|R]):-
 	 format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
 	 throw(no_node_id(NodeID))
 	),
-	SigmoidValue is 1 / (1 -  PSLL),
+	(PSLL==1->
+		SigmoidValue=1e20
+	;
+		SigmoidValue is 1 / (1 -  PSLL)
+	),
 	( Reward > SigmoidValue ->
 		Backscore1 is Backscore + Reward,
 		Reward1 is Reward
@@ -1654,7 +1691,7 @@ insert_in_order([(Th1,Heuristic1)|RestBeamIn],(Th,Heuristic),BeamSize,BeamOut):-
   NewBeam=[(Th,Heuristic),(Th1,Heuristic1)|RestBeamIn],
   length(NewBeam,L),
   (L>BeamSize->
-    nth(L,NewBeam,_Last,BeamOut)
+    nth1(L,NewBeam,_Last,BeamOut)
   ;
     BeamOut=NewBeam
   ).
@@ -3155,7 +3192,33 @@ member_eq(E,[H|_T]):-
 member_eq(E,[_H|T]):-
   member_eq(E,T).
 
+add_bdd_arg(A,Env,BDD,A1):-
+  A=..[P|Args],
+  append(Args,[Env,BDD],Args1),
+  A1=..[P|Args1].
 
+
+add_bdd_arg_db(A,Env,BDD,DB,A1):-
+  A=..[P|Args],
+  append(Args,[DB,Env,BDD],Args1),
+  A1=..[P|Args1].
+
+
+add_bdd_arg(A,Env,BDD,Module,A1):-
+  A=..[P|Args],
+  append(Args,[Env,BDD],Args1),
+  A1=..[P,Module|Args1].
+
+
+add_bdd_arg_db(A,Env,BDD,DB,Module,A1):-
+  A=..[P|Args],
+  append(Args,[DB,Env,BDD],Args1),
+  A1=..[P,Module|Args1].
+
+add_mod_arg(A,Module,A1):-
+  A=..[P|Args],
+  A1=..[P,Module|Args].
+/*
 add_bdd_arg(A,Env,BDD,Module,A1):-
   A=..[P|Args],
   append(Args,[Env,BDD],Args1),
@@ -3197,7 +3260,7 @@ add_bdd_arg_db(A,BDD,DB,Module,A1):-
 add_mod_arg(A,Module,A1):-
   A=..[P|Args],
   A1=..[P,Module|Args].
-
+*/
 
 table_pred(A):-  
   functor(A,P,Arity),
@@ -3628,6 +3691,7 @@ builtin(average(_L,_Av)).
 builtin(max_list(_L,_Max)).
 builtin(min_list(_L,_Max)).
 builtin(nth0(_,_,_)).
+builtin(nth1(_,_,_)).
 builtin(nth(_,_,_)).
 builtin(name(_,_)).
 builtin(float(_)).
@@ -3933,7 +3997,7 @@ skolemize1([Var|R],K):-
 
 
 banned_clause(H,B):-
-	skolemize([H,B],[H1,B1]),
+  skolemize([H,B],[H1,B1]),
   banned(H2,B2),
   mysublist(H2,H1),
   mysublist(B2,B1).
@@ -3946,7 +4010,7 @@ mysublist([A\==B|T],L):-
 	A\==B,
   mysublist(T,L).
 mysublist([H|T],L):-
-	nth(_,L,H,R),
+	nth1(_,L,H,R),
   mysublist(T,R).
 
 
@@ -4190,7 +4254,7 @@ take_var_args([T|RT],TypeVars,[T|RV]):-
 choose_rule(Theory,Rule):-
 	( setting(mcts_covering,true)	->
 		mcts_restart(Restart),
-		nth(K,Theory,Rule),
+		nth1(K,Theory,Rule),
 		K >= Restart
 	;
 		member(Rule,Theory)
