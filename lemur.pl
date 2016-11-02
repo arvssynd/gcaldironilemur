@@ -106,7 +106,7 @@ setting(score,ll).
 %setting(mcts_c,0.7). /* see L. Kocsis, C. Szepesvri, and J. Willemson, "Improved Monte-Carlo Search", 2006 */
 %setting(mcts_iter,100).
 setting(mcts_beamsize,3).
-setting(mcts_visits,+inf).
+setting(mcts_visits,1e20).
 %setting(max_rules,6).
 
 setting(max_var,4).
@@ -145,17 +145,29 @@ mcts(File,ParDepth,ParC,ParIter,ParRules,Covering):-
 	;
 	 true
 	),
-  (exists_file(FileIn)->
-    set(compiling,on),
+<<<<<<< HEAD
+  %(exists_file(FileIn)->
+   % set(compiling,on),
+	set(compiling,on),
     load(FileIn,_Th1,R1),
-    set(compiling,off)
+ /*   set(compiling,off)
   ;
 	 get_head_atoms(LHM,_LH0),
 	 generate_top_cl(LHM,R1)
-  ),
+  ),*/
 	
+	set(compiling,off),
 %	write('Initial theory'),nl,
 %	write_rules(R1,user_output),
+		R1=[],
+=======
+ set(compiling,on),
+    load(FileIn,_Th1,R1),
+    set(compiling,off),
+%	write('Initial theory'),nl,
+%	write_rules(R1,user_output),
+        R1=[],
+>>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
 
   findall(BL , modeb(_,BL), BLS0),
 	sort(BLS0,BSL),
@@ -225,9 +237,9 @@ learn_struct_mcts(DB,R1,R,CLL1):-
 	assert(mcts_best_theories_iteration([])),	
 
 	mcts(R3,CLL,DB),
-%	assert(mcts_best_by_cll(-inf)),
+%	assert(mcts_best_by_cll(-1e20)),
 %	assert(mcts_best_theory_by_cll([])),
-%	assert(mcts_best_by_visits(-inf)),
+%	assert(mcts_best_by_visits(-1e20)),
 %	select_the_best_bycll,
 %	select_the_best_byvisits,	
 
@@ -596,7 +608,7 @@ cycle_mcts(K,DB):-
 	%% format("\n~w: ~w ~w Sigmoid ~w",[K,MLN,PSLL,SigmoidValue]),	
 		setting(mcts_max_depth, MaxDepth),
 		random(1,MaxDepth,MaxDepth1),
-		default_policy(Theory,-inf,Reward,_,BestDefaultTheory,DB,1,MaxDepth1),
+		default_policy(Theory,-1e20,Reward,_,BestDefaultTheory,DB,1,MaxDepth1),
 	% do update with the sigmoid of the Score
 %%%	SigmoidValue is ((1 / (1 + exp(-Reward)))/0.5),
 
@@ -1148,7 +1160,7 @@ score_theory(Theory0,DB,Score,Theory,R3):-
     derive_bdd_nodes(DB,NEx,[],Nodes,0,CLL0),!
   ),
   setting(random_restarts_REFnumber,N),
-  random_restarts(N,Nodes,-inf,CLL,initial,Par,LE),  
+  random_restarts(N,Nodes,-1e20,CLL,initial,Par,LE),  
   end,
 
 %%%	format("\n Score ~w ~w",[CLL0,CLL]),
@@ -1268,7 +1280,7 @@ learn_struct_only(DB,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h
   set(depth_bound,DepthB),
   format("Theory search~n~n",[]),
   setting(max_iter_structure,MS),
-  cycle_structure(TCL,[HCL],S,-inf,DB,R2,Score,MS),
+  cycle_structure(TCL,[HCL],S,-1e20,DB,R2,Score,MS),
   format("Best target theory~n~n",[]),
   write_rules(R2,user_output),
   length(BG,NBG),
@@ -1292,7 +1304,7 @@ learn_struct(DB,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h],[b]
   set(depth_bound,DepthB),
   format("Theory search~n~n",[]),
   setting(max_iter_structure,MS),
-  cycle_structure(TCL,[HCL],S,-inf,DB,R2,Score,MS),
+  cycle_structure(TCL,[HCL],S,-1e20,DB,R2,Score,MS),
   format("Best target theory~n~n",[]),
   write_rules(R2,user_output),
   setting(background_clauses,NBG1),
@@ -1437,7 +1449,7 @@ em(File):-
    derive_bdd_nodes(DB,NEx,[],Nodes,0,_CLL0),!      
   ),
   setting(random_restarts_number,N),
-  random_restarts(N,Nodes,-inf,Score,initial,Par,LE),  %computes new parameters Par
+  random_restarts(N,Nodes,-1e20,Score,initial,Par,LE),  %computes new parameters Par
   end,
   retract_all(Th0),
   retract_all(R1),!,
@@ -1552,13 +1564,13 @@ score_clause_refinements([R1|T],Nrev,NRef,DB,NB0,NB,CL0,CL,CLBG0,CLBG):-
   setting(beamsize,BS),
   insert_in_order(NB0,(R3,Score),BS,NB1),
   (target(R3)->
-    insert_in_order(CL0,(R3,Score),+inf,CL1),
+    insert_in_order(CL0,(R3,Score),1e20,CL1),
     length(CL1,LCL1),
     format("N. of target clauses ~d~n~n",[LCL1]),
     CLBG1=CLBG0
   ;
     (range_restricted(R3)->
-      insert_in_order(CLBG0,(R3,Score),+inf,CLBG1),
+      insert_in_order(CLBG0,(R3,Score),1e20,CLBG1),
       length(CLBG1,LCL1),
       format("N. of background clauses ~d~n~n",[LCL1]),
       CL1=CL0
@@ -1737,7 +1749,12 @@ derive_bdd_nodes_groupatoms([H|T],M,ExData,E,G,Nodes0,Nodes,CLL0,CLL,LE0,LE):-
   get_output_atoms(O,M),
   generate_goal(O,M,H,[],GL),
   length(GL,NA),
-  (M:prob(H,P)->
+<<<<<<< HEAD
+  %(M:prob(H,P)->
+	(M:prob1(H,P)->
+=======
+  (M:prob1(H,P)->
+>>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
     CardEx is P*E/NA
   ;
     CardEx is 1.0
@@ -2182,7 +2199,7 @@ generate_top_cl([(P/A,LMH)|T],[(P/A,LR)|TR]):-
 
 generate_top_cl_pred([],[]):-!.
 
-generate_top_cl_pred([A|T],[(rule(R,[A1:0.5,'':0.5],[],true),-inf)|TR]):-
+generate_top_cl_pred([A|T],[(rule(R,[A1:0.5,'':0.5],[],true),-1e20)|TR]):-
   A=..[F|ArgM],
   keep_const(ArgM,Arg),
   A1=..[F|Arg],
@@ -2307,7 +2324,7 @@ generate_body([(P/A,LH)|T],[(P/A,LR)|TR]):-
 
 generate_body_pred([],[]):-!.
 
-generate_body_pred([(A,H,Det)|T],[(rule(R,HP,[],BodyList),-inf)|CL0]):-!,
+generate_body_pred([(A,H,Det)|T],[(rule(R,HP,[],BodyList),-1e20)|CL0]):-!,
   get_modeb(Det,[],BL),
   get_args(A,H,Pairs,[],Args,[],ArgsTypes,M),
   setting(d,D),
@@ -2327,7 +2344,7 @@ generate_body_pred([(A,H,Det)|T],[(rule(R,HP,[],BodyList),-inf)|CL0]):-!,
   write_disj_clause(user_output,(HeadV:-BodyListV)),
   generate_body_pred(T,CL0).
 
-generate_body_pred([(A,H)|T],[(rule(R,[Head:0.5,'':0.5],[],BodyList),-inf)|CL0]):-
+generate_body_pred([(A,H)|T],[(rule(R,[Head:0.5,'':0.5],[],BodyList),-1e20)|CL0]):-
   functor(A,F,AA),
   findall((R,B),(modeb(R,B),functor(B,FB,AB),determination(F/AA,FB/AB)),BL),
   A=..[F|ArgsTypes],
@@ -2407,7 +2424,7 @@ find_atoms([(R,H)|T],ArgsTypes0,Args0,ArgsTypes,Args,L0,L1,M):-
   call_atoms(L,[],At),
   remove_duplicates(At,At1),
   (R = '*' ->
-    R1= +inf
+    R1= 1e20
   ;
     R1=R
   ),
@@ -2599,8 +2616,14 @@ assert_all(T,M,TRef).
 retract_all([]):-!.
 
 retract_all([H|T]):-
-  retract(H),
+<<<<<<< HEAD
+  %retract(H),
+	erase(H),
+  	retract_all(T).
+=======
+  erase(H),
   retract_all(T).
+>>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
 
 
 read_clauses_dir(S,[Cl|Out]):-
@@ -4479,3 +4502,27 @@ write_body3(A,B):-
     true
   ).
 
+remove_duplicates(L0,L):-
+  remove_duplicates(L0,[],L1),
+  reverse(L1,L).
+
+remove_duplicates([],L,L).
+
+remove_duplicates([H|T],L0,L):-
+  member_eq(H,L0),!,
+  remove_duplicates(T,L0,L).
+
+remove_duplicates([H|T],L0,L):-
+  remove_duplicates(T,[H|L0],L).
+remove_duplicates(L0,L):-
+  remove_duplicates(L0,[],L1),
+  reverse(L1,L).
+
+remove_duplicates([],L,L).
+
+remove_duplicates([H|T],L0,L):-
+  member_eq(H,L0),!,
+  remove_duplicates(T,L0,L).
+
+remove_duplicates([H|T],L0,L):-
+  remove_duplicates(T,[H|L0],L).
