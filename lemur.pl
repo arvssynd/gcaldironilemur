@@ -145,10 +145,6 @@ mcts(File,ParDepth,ParC,ParIter,ParRules,Covering):-
 	;
 	 true
 	),
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5301024d0d7976083348299012bcaf34939fb8ea
   %(exists_file(FileIn)->
    % set(compiling,on),
 	set(compiling,on),
@@ -160,23 +156,11 @@ mcts(File,ParDepth,ParC,ParIter,ParRules,Covering):-
   ),*/
 	
 	set(compiling,off),
-<<<<<<< HEAD
+
 %	write('Initial theory'),nl,
 %	write_rules(R1,user_output),
 		R1=[],
-=======
- set(compiling,on),
-    load(FileIn,_Th1,R1),
-    set(compiling,off),
-%	write('Initial theory'),nl,
-%	write_rules(R1,user_output),
-        R1=[],
->>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
-=======
-%	write('Initial theory'),nl,
-%	write_rules(R1,user_output),
-		R1=[],
->>>>>>> 5301024d0d7976083348299012bcaf34939fb8ea
+
 
   findall(BL , modeb(_,BL), BLS0),
 	sort(BLS0,BSL),
@@ -1758,17 +1742,8 @@ derive_bdd_nodes_groupatoms([H|T],M,ExData,E,G,Nodes0,Nodes,CLL0,CLL,LE0,LE):-
   get_output_atoms(O,M),
   generate_goal(O,M,H,[],GL),
   length(GL,NA),
-<<<<<<< HEAD
-<<<<<<< HEAD
   %(M:prob(H,P)->
 	(M:prob1(H,P)->
-=======
-  (M:prob1(H,P)->
->>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
-=======
-  %(M:prob(H,P)->
-	(M:prob1(H,P)->
->>>>>>> 5301024d0d7976083348299012bcaf34939fb8ea
     CardEx is P*E/NA
   ;
     CardEx is 1.0
@@ -2630,20 +2605,10 @@ assert_all(T,M,TRef).
 retract_all([]):-!.
 
 retract_all([H|T]):-
-<<<<<<< HEAD
-<<<<<<< HEAD
   %retract(H),
 	erase(H),
   	retract_all(T).
-=======
-  erase(H),
-  retract_all(T).
->>>>>>> 40d249c84bbe4665856b667d554f95eef33079b1
-=======
-  %retract(H),
-	erase(H),
-  	retract_all(T).
->>>>>>> 5301024d0d7976083348299012bcaf34939fb8ea
+
 
 
 read_clauses_dir(S,[Cl|Out]):-
