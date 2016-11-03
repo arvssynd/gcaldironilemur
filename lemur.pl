@@ -107,7 +107,7 @@ setting(score,ll).
 %setting(mcts_iter,100).
 setting(mcts_beamsize,3).
 setting(mcts_visits,1e20).
-setting(max_rules,5).
+%setting(max_rules,5).
 
 setting(max_var,4).
 
@@ -147,15 +147,12 @@ mcts(File,ParDepth,ParC,ParIter,ParRules,Covering):-
 	),
   %(exists_file(FileIn)->
    % set(compiling,on),
-	set(compiling,on),
-    load(FileIn,_Th1,R1),
  /*   set(compiling,off)
   ;
 	 get_head_atoms(LHM,_LH0),
 	 generate_top_cl(LHM,R1)
   ),*/
 	
-	set(compiling,off),
 
 %	write('Initial theory'),nl,
 %	write_rules(R1,user_output),
@@ -369,7 +366,7 @@ print_graph([ID|R],S):-
 	print_edges(ID,Childs,S),
 	print_graph(R,S),
 	print_graph(Childs,S).
-print_edges(ID,[],S).
+print_edges(ID,[],S):-!.
 print_edges(ID,[ID1|R],S):-
 	node(ID1, Childs, Parent , CLL, Theory, Visited, Backscore),
 	(Visited > 1 ->
@@ -456,7 +453,7 @@ backup_amaf(NodeID,Reward,ParentsTranspose):-
 	 Visited1 is Visited
 %	 format("~w- ",[NodeID])	 
 	;
-	 ( PSLL == 1  ->
+	 (PSLL =:= 1  ->
 		 Backscore1 is Backscore + Reward
 	 ;
 	         SigmoidValue is 1 / (1 - PSLL),
@@ -605,13 +602,12 @@ cycle_mcts(K,DB):-
 	% do update with the sigmoid of the Score
 %%%	SigmoidValue is ((1 / (1 + exp(-Reward)))/0.5),
 
-                (Reward==1->
+                (Reward=:=1->
 	   	  SigmoidValue=1e20
 		;
 		  SigmoidValue is 1 / (1 -  Reward)
 		),
-
-		( SigmoidValue > 0 ->
+		( Reward =\= -1e20 ->
 		
 %	(Reward > CLL ->
 %	 SigmoidValue = 1
@@ -817,7 +813,6 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 
 
 		score_theory(Spec,DB,Score,BestTheory,NewTheory),
-
 		( setting(mcts_covering,true) ->
 			length(NewTheory,NewTheoryL),	%lemurc
 			length(Spec,TheoryL),
@@ -917,7 +912,7 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 minmaxvalue(Childs,MinV,MaxV):-
 	Childs = [F|R],
 	node(F, _, _ , _, _, Visits, Reward),
-	(Visits==0->
+	(Visits=:=0->
 		V is sign(Reward)*1e20
 	;
 		V is Reward / Visits
@@ -927,7 +922,7 @@ minmaxvalue(Childs,MinV,MaxV):-
 minmaxvalue([],Min,Max,Min,Max).
 minmaxvalue([C|R],PrevMin,PrevMax,MinV,MaxV):-
 	node(C, _, _ , _, _, Visits, Reward),
-	(Visits==0->
+	(Visits=:=0->
 		V is sign(Reward)*1e20
 	;
 		V is Reward / Visits
@@ -947,7 +942,7 @@ mean_value_level(Cs,M):-
 	mean_value_level1(Cs,Me),
 	length(Me,L),
 	sum_list(Me,S),
-	(L==0->
+	(L=:=0->
 	  M is sign(S)*1e20
 	;
 	  M is S / L
@@ -961,7 +956,7 @@ mean_value_level1([C|R],[M|Rm]):-
 	node(C, _, _ , _, _, Visits, Reward),
 	!,
 	mean_value_level1(R,Rm),
-	(Visits==0->
+	(Visits=:=0->
 		M is sign(Reward)*1e20
 	;
 		M is (Reward / Visits)
@@ -985,15 +980,11 @@ uct(Childs, ParentVisits, BestChild):-
 uct([], _CurrentBestUCT, _ParentVisits, BestChild, BestChild).
 uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, BestChild) :-
 	node(Child, _, _ , _, Theory, Visits, Reward),
-	( Visits == 0 ->
+	( Visits =:= 0 ->
 		BestChild = Child
 	;
 		setting(mcts_c,C),
-		(Visits==0->
-			UCT is sign(Reward)*1e20
-		;		
-			UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
-		),
+		UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
 %%%		format("~w ",[UCT]),flush_output,
 		(UCT > CurrentBestUCT ->
 		 uct(RestChilds, UCT, ParentVisits, Child, BestChild)
@@ -1018,8 +1009,8 @@ uct(Childs, ParentVisits, Min, Max, BestChild):-
 %		;
 %		 R is Reward
 %		),
-		(Max-Min==0->
-			UCT is sign(R/Visits-Min)*1e20
+		(Max-Min=:=0->
+			UCT is sign(Reward/Visits-Min)*1e20
 		;
 			R is Reward,
 		%AA is ((R / Visits) - Min ) / (Max-Min),
@@ -1045,8 +1036,8 @@ uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max
 %		;
 %		 R is Reward
 %		),
-		(Max-Min==0->
-			UCT is sign(R/Visits-Min)*1e20
+		(Max-Min=:=0->
+			UCT is sign(Reward/Visits-Min)*1e20
 		;
 			R is Reward,
 		%AA is ((R / Visits) - Min ) / (Max-Min),
@@ -1129,7 +1120,7 @@ assert_childs([Spec|Rest],P,PCLL,[ID1|Childs]):-
 	ID1 is ID + 1,
 	assert(lastid(ID1)),
 %	SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
-	(PCLL==1->
+	(PCLL=:=1->
 		SigmoidValue=1e20
 	;
 		SigmoidValue is 1 / (1 -  PCLL)
@@ -1210,7 +1201,7 @@ backup(NodeID,Reward,[Parent|R]):-
 	 format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
 	 throw(no_node_id(NodeID))
 	),
-	(PSLL==1->
+	(PSLL=:=1->
 		SigmoidValue=1e20
 	;
 		SigmoidValue is 1 / (1 -  PSLL)
@@ -3744,30 +3735,30 @@ theory_revisions(Theory,TheoryRevs):-
 
 apply_operators([],_Theory,[]).
 
-apply_operators([add(Rule)|RestOps],Theory,[NewTheory|RestTheory]) :-
+apply_operators([add(Rule)|RestOps],Theory,[NewTheory|RestTheory]) :-!,
   append(Theory, [Rule], NewTheory),
 %  nl,write(NewTheory),
   apply_operators(RestOps,Theory,RestTheory).
 
-apply_operators([add_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
+apply_operators([add_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-!,
   delete_matching(Theory,Rule1,Theory1),
   append(Theory1, [Rule2], NewTheory),
 %  nl,write(NewTheory),
   apply_operators(RestOps,Theory,RestTheory).
 
-apply_operators([remove_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
+apply_operators([remove_body(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-!,
   delete_matching(Theory,Rule1,Theory1),
   append(Theory1, [Rule2], NewTheory),
 %  nl,write(NewTheory),
   apply_operators(RestOps,Theory,RestTheory).
 
-apply_operators([add_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
+apply_operators([add_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-!,
   delete_matching(Theory,Rule1,Theory1),
   append(Theory1, [Rule2], NewTheory),
 %  nl,write(NewTheory),
   apply_operators(RestOps,Theory,RestTheory).
 
-apply_operators([remove_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-
+apply_operators([remove_head(Rule1,Rule2,_A)|RestOps],Theory,[NewTheory|RestTheory]) :-!,
   delete_matching(Theory,Rule1,Theory1),
   append(Theory1, [Rule2], NewTheory),
 %  nl,write(NewTheory),
@@ -4551,18 +4542,6 @@ write_body3(A,B):-
     true
   ).
 
-remove_duplicates(L0,L):-
-  remove_duplicates(L0,[],L1),
-  reverse(L1,L).
-
-remove_duplicates([],L,L).
-
-remove_duplicates([H|T],L0,L):-
-  member_eq(H,L0),!,
-  remove_duplicates(T,L0,L).
-
-remove_duplicates([H|T],L0,L):-
-  remove_duplicates(T,[H|L0],L).
 remove_duplicates(L0,L):-
   remove_duplicates(L0,[],L1),
   reverse(L1,L).
