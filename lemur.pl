@@ -160,15 +160,11 @@ induce_rules(Folds,R):-
   assert(M:database(DB)),
   %gtrace,
   %find_ex(DB,_LG,NPos,_Neg),
-  M:local_setting(megaex_bottom, NumMB),
-  (NPos >= NumMB ->
-      true
-    ;
-      format2("~nWARN: Number of required bottom clauses is greater than the number of training examples!~n. The number of required bottom clauses will be equal to the number of training examples", []),
-      set_lm(megaex_bottom, NPos)
-  ),
   
   statistics(walltime,[_,_]),
+	format("\nMonte Carlo Tree Search for LPAD Structure Learning\n",[]),
+%	assert(filedot('bdd.dot')),
+
 %  findall(C,M:bg(C),RBG),
   (M:bg(RBG0)->
     process_clauses(RBG0,[],_,[],RBG),
@@ -179,22 +175,19 @@ induce_rules(Folds,R):-
   ;
     true
   ),
-  (M:local_setting(specialization,bottom)->
-    M:local_setting(megaex_bottom,MB),
-    deduct(MB,M,DB,[],InitialTheory),   
-    length(InitialTheory,_LI),  
-    remove_duplicates(InitialTheory,R1)
-  ;
-    get_head_atoms(O,M),
-    generate_top_cl(O,R1)
-  ),
-  learn_struct(DB,M,R1,R2,Score2),
+  findall(BL , modeb(_,BL), BLS0),
+        sort(BLS0,BSL),
+        assert(mcts_modeb(BSL)),
+
+        assert(mcts_restart(1)),
+        learn_struct_mcts(DB,R1,R2,Score2),
+        retract(mcts_restart(_)),
   learn_params(DB,M,R2,R,Score),  
+
   format2("~nRefinement score  ~f - score after EMBLEM ~f~n",[Score2,Score]),
   statistics(walltime,[_,WT]),
   WTS is WT/1000,
   write2('\n\n'),
-  format2('/* SLIPCOVER Final score ~f~n',[Score]),
   format2('Wall time ~f */~n',[WTS]),
   write_rules2(R,user_output),
 %  told,
@@ -248,8 +241,8 @@ mcts(File,ParDepth,ParC,ParIter,ParRules,Covering):-
 %	name(File,FileDot),
  % append(FileDot,".dot",FileDotExt),
   %name(FileExt,FileDotExt),
-	atom_concat(File,'.dot', FileExt),	
-	assert(filedot(FileExt)),
+%	atom_concat(File,'.dot', FileExt),	
+%	assert(filedot(FileExt)),
 	
 	reconsult(FileL),
 	load_models(FileKB,DB),	
@@ -467,7 +460,7 @@ mcts(InitialTheory,InitialScore,DB):-
 	cycle_mcts(I,DB),
 	retract(mcts_iteration(_)),
 	retract(lastid(Nodes)),
-	print_graph,	
+%	print_graph,	
 	format("\nTree size: ~w nodes.",[Nodes]).
 
 print_graph:-
@@ -481,7 +474,7 @@ print_graph:-
 	print_graph([1],S),
 	format(S,"}",[]),
 	close(S).
-print_graph([],S).
+%print_graph([],S).
 print_graph([ID|R],S):-
 	node(ID, Childs, Parent , CLL, Theory, Visited, Backscore),
 	print_edges(ID,Childs,S),
@@ -1440,10 +1433,9 @@ learn_struct_only(DB,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h
   append(R2,BG2,R).
 
 
-learn_struct(DB,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h],[b]],...], -R:final theory of the same form, -CLL
-  input_mod(M),
+learn_struct(DB,M,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h],[b]],...], -R:final theory of the same form, -CLL
   format("Clause search~n~n",[]),
-  M:local_setting(max_iter,M),
+  M:local_setting(max_iter,MI),
   M:local_setting(depth_bound,DepthB),
   set(depth_bound,false),
   findall((H,B,BL),fixed_rule(H,B,BL),LF),
@@ -1452,7 +1444,7 @@ learn_struct(DB,R1,R,Score):-   %+R1:initial theory of the form [rule(NR,[h],[b]
   format("Scoring fixed clauses: ~d clauses~n~n",[LLF]),
   score_clause_refinements(LFR,1,LLF,DB,[],NB1,[],CL0,[],CLBG0),
   append(NB1,R1,Beam),
-  cycle_beam(Beam,DB,CL0,[(HCL,S)|TCL],CLBG0,BG,M),
+  cycle_beam(Beam,DB,CL0,[(HCL,S)|TCL],CLBG0,BG,MI),
   set(depth_bound,DepthB),
   format("Theory search~n~n",[]),
   M:local_setting(max_iter_structure,MS),
@@ -4634,19 +4626,19 @@ user:term_expansion((:- end_in), []) :-
   ).
 
 
-%
-user:term_expansion(begin(model(I)), []) :-!,
-  input_mod(M),
+
+user:term_expansion(begin(model(I)), []) :-
+  input_mod(M),!,
   retractall(M:model(_)),
   assert(M:model(I)),
   assert(M:int(I)).
 
-user:term_expansion(end(model(_I)), []) :-!,
-  input_mod(M),
+user:term_expansion(end(model(_I)), []) :-
+  input_mod(M),!,
   retractall(M:model(_)).
 
 user:term_expansion(At, A) :-
-%  write(At),nl,
+  %write(At),nl,
   input_mod(M),
   M:model(Name),
   At \= (_ :- _),
