@@ -116,6 +116,14 @@ default_setting_lm(mcts_maxrestarts,20).
 default_setting_lm(mcts_covering,true).
 default_setting_lm(max_rules,1).
 
+default_setting_lm(epsilon_parsing, 1e-5).
+default_setting_lm(tabling, off).
+default_setting_lm(bagof,false).
+default_setting_lm(compiling,off).
+default_setting_lm(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
+default_setting_lm(depth,2).
+default_setting_lm(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
+
 :- thread_local v/3, input_mod/1, local_setting/2, rule_sc_n/1.
 
 /** 
@@ -1609,11 +1617,9 @@ update_theory_par([def_rule(H,B,L)|T0],Par,[def_rule(H,B,L)|T]):-!,
 update_theory_par([(H:-B)|T0],Par,[(H:-B)|T]):-!,
   update_theory_par(T0,Par,T).
 
-rrr.
-
-update_theory_par([rule(N,_H,_B,_L)|T0],Par,T):-
-  member([N,[1.0|_T]],Par),!,
-	rrr,
+update_theory_par([rule(N,H,_B,_L)|T0],Par,T):-
+  member([N,[1.0|_T]],Par),
+  last(H,'':_P),!,  
   update_theory_par(T0,Par,T).
 
 update_theory_par([rule(N,H,B,L)|T0],Par,[rule(N,H1,B,L)|T]):-
@@ -1621,7 +1627,6 @@ update_theory_par([rule(N,H,B,L)|T0],Par,[rule(N,H1,B,L)|T]):-
   reverse(P,P1),
   update_head_par(H,P1,H1),  
   update_theory_par(T0,Par,T).
-
 
 update_theory(R,initial,R):-!.
 
@@ -2353,13 +2358,6 @@ generate_top_cl([A|T],[(rule(R,[A1:0.5,'':0.5],[],true),-1e20)|TR]):-
   get_next_rule_number(R),
   generate_top_cl(T,TR).
 
-generate_head(0,_DB,_LMH,LH,LH):-!.
-
-generate_head(NM,DB,LMH,LH0,LH):-
-  sample(1,DB,[M],DB1),
-  generate_head_ex(LMH,M,LH0,LH1),
-  NM1 is NM-1,
-  generate_head(NM1,DB1,LMH,LH1,LH).
 
 generate_head_ex([],_M,[],[]).
 
@@ -2416,7 +2414,7 @@ keep_const([H|T],[H|T1]):-
 
 
 
-sample(0,List,[],List):-!.
+/*sample(0,List,[],List):-!.
 
 sample(N,List,List,[]):-
   length(List,L),
@@ -2440,7 +2438,7 @@ sample(N,List,[El|List1]):-
   random(0,L,Pos),
   nth0(Pos,List,El,Rest),
   N1 is N-1,
-  sample(N1,Rest,List1).
+  sample(N1,Rest,List1).*/
 
 get_args([],[],[],A,A,AT,AT,_).
 
@@ -2715,20 +2713,13 @@ rule_n(0).
 local_setting(A,B):-
 	setting(A,B).
 
-default_setting_lm(epsilon_parsing, 1e-5).
+
 deafult_setting_lm(tabling, off).
 /* on, off */
 
-default_setting_lm(bagof,false).
+
 /* values: false, intermediate, all, extra */
 
-default_setting_lm(compiling,off).
-
-%:-yap_flag(unknown,fail).
-
-default_setting_lm(depth_bound,false).  %if true, it limits the derivation of the example to the value of 'depth'
-default_setting_lm(depth,2).
-default_setting_lm(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
 %:-yap_flag(single_var_warnings, on).
 
@@ -3722,33 +3713,37 @@ add_rule(add(SpecRule)):-
 
 
 
+generate_head([],_M,_Mod,HL,HL):-!.
+
+generate_head([(A,G,D)|T],M,Mod,H0,H1):-!,
+  generate_head_goal(G,M,Goals),
+  findall((A,Goals,D),(member(Goal,Goals),call(Mod:Goal),ground(Goals)),L),
+  Mod:local_setting(initial_clauses_per_megaex,IC),   %IC: represents how many samples are extracted from the list L of example
+  sample(IC,L,L1),   
+  append(H0,L1,H2),
+  generate_head(T,M,Mod,H2,H1).
+
+generate_head([A|T],M,Mod,H0,H1):-
+  functor(A,F,N),    
+  functor(F1,F,N),   
+  F1=..[F|Arg],
+  Pred1=..[F,M|Arg],
+  A=..[F|ArgM],
+  keep_const(ArgM,Arg),
+  findall((A,Pred1),call(Mod:Pred1),L),
+  Mod:local_setting(initial_clauses_per_megaex,IC),   
+  sample(IC,L,L1),   
+  append(H0,L1,H2),
+  generate_head(T,M,Mod,H2,H1).
+
 generate_head([H|_T],_P,[H1:0.5,'':0.5]):-
   H=..[Pred|Args],
   length(Args,LA),
   length(Args1,LA),
-  H1=..[Pred|Args1],
-	check_for_constants(Args,Args1).
-
-check_for_constants([],[]).
-check_for_constants([+X|R],[V|R1]):-
-	!,
-	check_for_constants(R,R1).
-check_for_constants([-X|R],[V|R1]):-
-	!,
-	check_for_constants(R,R1).
-check_for_constants([X|R],[X|R1]):-
-	check_for_constants(R,R1).
-
-
+  H1=..[Pred|Args1].
 
 generate_head([_H|T],P,Head):-
   generate_head(T,P,Head).
-
-
-generalize_head(Rule,Ref):-
-  Rule = rule(ID,LH,BL,L),
-  generalize_head1(LH,LH1,NewAt),
-  Ref = add_head(Rule,rule(ID,LH1,BL,L),NewAt).
 
 
 generalize_head1(LH,LH1,NH):-
@@ -4007,13 +4002,6 @@ convert_to_input_vars([+T|RT],[+T|RT1]):-
 
 convert_to_input_vars([-T|RT],[+T|RT1]):-
   convert_to_input_vars(RT,RT1).
-
-
-member_eq(X,[Y|_List]) :-
-  X == Y.
-
-member_eq(X,[_|List]) :-
-  member_eq(X,List).
 
 
 remove_eq(X,[Y|R],R):-
