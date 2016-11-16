@@ -227,7 +227,7 @@ to_dyn(M,P/A):-
 learn_struct_mcts(DB,R1,R,CLL1):-  
   learn_params(DB,user, R1, R3, CLL),
   input_mod(M),
-	/*generate_clauses(R1,R2,0,[],Th1), 
+  /*generate_clauses(R1,R2,0,[],Th1), 
 	assert_all(Th1),  
 	assert_all(R2),
 	!,
