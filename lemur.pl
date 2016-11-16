@@ -1505,6 +1505,7 @@ elab_ref([def_rule(H,B,_Lits)|T],[rule(H1,B1)|T1]):-
   numbervars((H1,B1),0,_N),
   elab_ref(T,T1).
 
+
 %insertion in the beam
 insert_in_order([],C,BeamSize,[C]):-
   BeamSize>0,!.
@@ -1529,14 +1530,12 @@ insert_in_order([(Th1,Heuristic1)|RestBeamIn],(Th,Heuristic),BeamSize,
   RestBeamOut).
 
 
-
 remove_int_atom_list([],[]).
 
 remove_int_atom_list([A|T],[A1|T1]):-
   A=..[F,_|Arg],
   A1=..[F|Arg],
   remove_int_atom_list(T,T1).
-
 
 
 remove_int_atom(A,A1):-
@@ -1548,6 +1547,7 @@ get_heads([],[]).
 
 get_heads([_-H|T],[H|TN]):-
   get_heads(T,TN).
+
 
 derive_bdd_nodes([],_E,Nodes,Nodes,CLL,CLL).
 
@@ -1578,7 +1578,6 @@ derive_bdd_nodes([H|T],E,Nodes0,Nodes,CLL0,CLL):-
 
 get_node_list([],BDD,BDD,_CE).
 
-
 get_node_list([H|T],BDD0,BDD,CE):-
   get_node(H,BDD1),
   and(BDD0,BDD1,BDD2),
@@ -1606,7 +1605,6 @@ derive_bdd_nodes_groupatoms([H|T],M,ExData,E,G,Nodes0,Nodes,CLL0,CLL,LE0,LE):-
   get_output_atoms(O,M),
   generate_goal(O,M,H,[],GL),
   length(GL,NA),
-  %(M:prob(H,P)->
 	(M:prob(H,P)->
     CardEx is P*E/NA
   ;
@@ -1646,6 +1644,7 @@ get_bdd_group([H|T],M,Env,T1,Gmax,G1,BDD0,BDD,CE,[H|LE0],LE):-
   G is Gmax-1,
   get_bdd_group(T,M,Env,T1,G,G1,BDD2,BDD,CE,LE0,LE).
   
+
 /* EM start */
 random_restarts(0,_ExData,_Nodes,Score,Score,Par,Par,_LE):-!.
 
@@ -1735,6 +1734,7 @@ compute_aucpr(L,Pos,Neg,A):-
   ),
   area(Points,Flag,Pos,0,0,0,A).
 
+
 compute_curve_points([],_P0,TP,FP,_FN,_TN,[1.0-Prec]):-!,
   Prec is TP/(TP+FP).
 
@@ -1766,6 +1766,7 @@ compute_curve_points([P- _|T],P0,TP,FP,FN,TN,Pr):-!,
   FN1 is FN-1,
   compute_curve_points(T,P1,TP1,FP,FN1,TN,Pr1).
 
+
 area([],_Flag,_Pos,_TPA,_FPA,A,A).
 
 area([R0-P0|T],Flag,Pos,TPA,FPA,A0,A):-
@@ -1790,6 +1791,7 @@ area([R0-P0|T],Flag,Pos,TPA,FPA,A0,A):-
   ),
   area(T,Flag,Pos,TPB,FPB,A1,A).
 
+
 interpolate(I,N,_Pos,_R0,_P0,_TPA,_FPA,_TPB,_FPB,A,A):-I>N,!.
 
 interpolate(I,N,Pos,R0,P0,TPA,FPA,TPB,FPB,A0,A):-
@@ -1808,6 +1810,7 @@ randomize([rule(N,V,NH,HL,BL,LogF)|T],[rule(N,V,NH,HL1,BL,LogF)|T1]):-
   randomize_head(Int,HL,0,HL1),
   randomize(T,T1).
 
+
 randomize_head(_Int,['':_],P,['':PNull1]):-!,
   PNull is 1.0-P,
   (PNull>=0.0->
@@ -1823,21 +1826,17 @@ randomize_head(Int,[H:_|T],P,[H:PH1|NT]):-
   randomize_head(Int,T,P1,NT).
 
 
-
 update_head([],[],_N,[]):-!.  
 
 update_head([H:_P|T],[PU|TP],N,[H:P|T1]):-
-  P is PU/N,
-  update_head(T,TP,N,T1).
-
-
+	P is PU/N,
+	update_head(T,TP,N,T1).
 /* EM end */    
   
   
 /* utilities */
-
 generate_file_names(File,FileKB,FileIn,FileBG,FileOut,FileL):-
-  atom_concat(File,'.kb',FileKB),
+	atom_concat(File,'.kb',FileKB),
   atom_concat(File,'.cpl',FileIn),
   atom_concat(File,'.rules',FileOut),
   atom_concat(File,'.bg',FileBG),
@@ -1848,6 +1847,7 @@ generate_file_name(File,Ext,FileExt):-
   append(FileString,Ext,FileStringExt),
   name(FileExt,FileStringExt).
    
+
 load_models(File,ModulesList):-  %carica le interpretazioni, 1 alla volta
   open(File,read,Stream),
   read_models(Stream,ModulesList),
@@ -1922,7 +1922,7 @@ write_rules([rule(_N,HL,BL,Lit)|T],S):-
   copy_term((HL,BL,Lit),(HL1,BL1,Lit1)),
   numbervars((HL1,BL1,Lit1),0,_M),
   write_disj_clause(S,(HL1:-BL1)),
-%  write(Lit1),nl,
+	%write(Lit1),nl,
   write_rules(T,S).
 
 
@@ -1952,9 +1952,8 @@ write_disj_clause(S,(H:-B)):-
   write_body(S,B).
 
 
-
 write_head(S,[A:1.0|_Rest]):-!,
-%  write(_Rest),nl,
+	%write(_Rest),nl,
   format(S,"~p:1.0",[A]).
   
 write_head(S,[A:P,'':_P]):-!, 
@@ -1978,7 +1977,8 @@ write_body(S,[A|T]):-
   write_body(S,T).
 
 
-/*list2or([],true):-!.
+/*
+list2or([],true):-!.
 
 list2or([X],X):-
     X\=;(_,_),!.
@@ -1994,7 +1994,8 @@ list2and([X],X):-
 
 list2and([H|T],(H,Ta)):-!,
     list2and(T,Ta).
- */
+*/
+
 
 deduct(0,_Mod,_DB,Th,Th):-!.
 
@@ -2015,14 +2016,13 @@ deduct(NM,Mod,DB,InTheory0,InTheory):-
     )
   ;
     InTheory=InTheory0
-).
+	).
 
         
 get_head_atoms(O,M):-
   findall(A,M:modeh(_,A),O0),
   findall((A,B,D),M:modeh(_,A,B,D),O1),
   append(O0,O1,O).
-
 
 
 scan_pred_list([],[],[]).
@@ -2070,6 +2070,7 @@ generate_head_ex([(P/A,L)|T],M,[(P/A,LH)|LHT],[(P/A,LH1)|LHT1]):-
   append(LH,LHP,LH1),
   generate_head_ex(T,M,LHT,LHT1).
 
+
 generate_head_pred([],_M,HL,HL):-!.
 
 generate_head_pred([(A,G,Cons,D)|T],M,H0,H1):-!,
@@ -2095,12 +2096,14 @@ generate_head_pred([A|T],M,H0,H1):-
   append(H0,L1,H2),
   generate_head_pred(T,M,H2,H1).
 
+
 generate_head_goal([],_M,[]).
 
 generate_head_goal([H|T],M,[H1|T1]):-
   H=..[F|Arg],
   H1=..[F,M|Arg],
   generate_head_goal(T,M,T1).
+
 
 keep_const([],[]).
 
@@ -2117,33 +2120,6 @@ keep_const([H|T],[H|T1]):-
   keep_const(T,T1).
 
 
-
-/*sample(0,List,[],List):-!.
-
-sample(N,List,List,[]):-
-  length(List,L),
-  L=<N,!.
-
-sample(N,List,[El|List1],Li):-
-  length(List,L),
-  random(0,L,Pos),
-  nth0(Pos,List,El,Rest),
-  N1 is N-1,
-  sample(N1,Rest,List1,Li).
-
-sample(0,_List,[]):-!.
-
-sample(N,List,List):-
-  length(List,L),
-  L=<N,!.
-
-sample(N,List,[El|List1]):-
-  length(List,L),
-  random(0,L,Pos),
-  nth0(Pos,List,El,Rest),
-  N1 is N-1,
-  sample(N1,Rest,List1).*/
-
 get_args([],[],[],A,A,AT,AT,_).
 
 get_args([HM|TM],[H|TH],[(H,HM)|TP],A0,A,AT0,AT,M):-
@@ -2153,12 +2129,14 @@ get_args([HM|TM],[H|TH],[(H,HM)|TP],A0,A,AT0,AT,M):-
   append(AT0,ArgsTypes,AT1),
   get_args(TM,TH,TP,A1,A,AT1,AT,M).
 
+
 /* Generation of the bottom clauses */
 
 gen_head([],P,['':P]).
 
 gen_head([H|T],P,[H:P|TH]):-
   gen_head(T,P,TH).
+
 
 get_modeb([],B,B).
 
@@ -2167,11 +2145,13 @@ get_modeb([F/AA|T],B0,B):-
   append(B0,BL,B1),
   get_modeb(T,B1,B).
 
+
 generate_body([],[]).
 
 generate_body([(P/A,LH)|T],[(P/A,LR)|TR]):-
   generate_body_pred(LH,LR),
   generate_body(T,TR).
+
 
 generate_body_pred([],[]):-!.
 
@@ -2373,7 +2353,6 @@ instantiate_input([# Type|T],AT,A,[H|TA]):-!,
 instantiate_input([-# _Type|T],AT,A,[_V|TA]):-!,
   instantiate_input(T,AT,A,TA).
 
-
 instantiate_input([C|T],AT,A,[C|TA]):-
   instantiate_input(T,AT,A,TA).
 
@@ -2385,7 +2364,7 @@ find_val([_T|TT],[_A|TA],T,A):-
 
 
 get_output_atoms(O,M):-
-findall((A/Ar),M:output((A/Ar)),O).
+	findall((A/Ar),M:output((A/Ar)),O).
 
 
 generate_goal([],_M,_H,G,G):-!.
@@ -2398,7 +2377,7 @@ generate_goal([P/A|T],M,H,G0,G1):-
   findall(\+ Pred1,call(M:neg(Pred1)),LN),
   append(G0,L,G2),
   append(G2,LN,G3),
-generate_goal(T,M,H,G3,G1).
+	generate_goal(T,M,H,G3,G1).
   
 
 /*:-[inference_lemur]. */
