@@ -2003,17 +2003,17 @@ deduct(NM,Mod,DB,InTheory0,InTheory):-
     generate_head(O,M,Mod,[],HL),
     %gtrace,
     ( HL \== [] ->
-       (generate_body(HL,Mod,InTheory1),
-    	append(InTheory0,InTheory1,InTheory2),
-    	NM1 is NM-1,
-    	deduct(NM1,Mod,DB1,InTheory2,InTheory)
-       )
+      (generate_body(HL,Mod,InTheory1),
+      append(InTheory0,InTheory1,InTheory2),
+      NM1 is NM-1,
+      deduct(NM1,Mod,DB1,InTheory2,InTheory)
+      )
       ;
-       deduct(NM,Mod,DB,InTheory0,InTheory)
+      deduct(NM,Mod,DB,InTheory0,InTheory)
     )
   ;
     InTheory=InTheory0
-	).
+  ).
 
         
 get_head_atoms(O,M):-
@@ -2361,7 +2361,7 @@ find_val([_T|TT],[_A|TA],T,A):-
 
 
 get_output_atoms(O,M):-
-	findall((A/Ar),M:output((A/Ar)),O).
+  findall((A/Ar),M:output((A/Ar)),O).
 
 
 generate_goal([],_M,_H,G,G):-!.
@@ -2374,7 +2374,7 @@ generate_goal([P/A|T],M,H,G0,G1):-
   findall(\+ Pred1,call(M:neg(Pred1)),LN),
   append(G0,L,G2),
   append(G2,LN,G3),
-	generate_goal(T,M,H,G3,G1).
+  generate_goal(T,M,H,G3,G1).
   
 
 /*:-[inference_lemur]. */
@@ -2428,7 +2428,7 @@ assert_all([H|T],[HRef|TRef]):-
 retract_all([]):-!.
 
 retract_all([H|T]):-
-	erase(H),
+  erase(H),
   retract_all(T).
 
 
@@ -2582,7 +2582,7 @@ generate_clause(Head,Body,VC,R,Probs,BDDAnd,N,Clause,Module):-
 
 generate_clause(Head,Env,Body,VC,R,Probs,BDDAnd,N,Clause,Module):-
   add_bdd_arg(Head,Env,BDD,Module,Head1),
-	Clause=(Head1:-(Body,pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,N,B),pita:and(Env,BDDAnd,B,BDD))).
+  Clause=(Head1:-(Body,pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,N,B),pita:and(Env,BDDAnd,B,BDD))).
 
 
 generate_rules([],_Env,_Body,_VC,_R,_Probs,_BDDAnd,_N,[],_Module).
@@ -2593,7 +2593,7 @@ generate_rules([Head:_P1,'':_P2],Env,Body,VC,R,Probs,BDDAnd,N,[Clause],Module):-
 generate_rules([Head:_P|T],Env,Body,VC,R,Probs,BDDAnd,N,[Clause|Clauses],Module):-
   generate_clause(Head,Env,Body,VC,R,Probs,BDDAnd,N,Clause,Module),
   N1 is N+1,
-	generate_rules(T,Env,Body,VC,R,Probs,BDDAnd,N1,Clauses,Module).
+  generate_rules(T,Env,Body,VC,R,Probs,BDDAnd,N1,Clauses,Module).
 
 
 generate_rules_db([],_Body,_VC,_R,_Probs,_DB,_BDDAnd,_N,[],_Module):-!.
@@ -2633,8 +2633,8 @@ process_body_db([\+ H|T],BDD,BDD1,DB,Vars,Vars1,[
   add_bdd_arg_db(H,BDDH,DB,Module,H2),
   process_body_db(T,BDD2,BDD1,DB,Vars,Vars1,Rest,Module).
 
-process_body_db([\+ H|T],BDD,BDD1,DB,Vars,Vars1,[
-  neg(H1)|Rest],Module):-
+process_body_db([\+ H|T],BDD,BDD1,DB,Vars,Vars1,
+[neg(H1)|Rest],Module):-
   given_cw(H),!,
   add_mod_arg(H,Module,H1),
   process_body_db(T,BDD,BDD1,DB,Vars,Vars1,Rest,Module).
@@ -2684,16 +2684,14 @@ process_body_def_db([\+ H|T],BDD,BDD1,DB,Vars,Vars1,[\+ H|Rest],Module):-
 
 process_body_def_db([\+H|T],BDD,BDD1,DB,Vars,Vars1,
 [(((neg(H1);\+ H1),one(BDDN));(bagof(BDDH,H2,L)->or_list(L,BDDL),bdd_not(BDDL,BDDN);one(BDDN))),
-  and(BDD,BDDN,BDD2)|Rest],
-Module):-
+  and(BDD,BDDN,BDD2)|Rest],Module):-
   given(H),!,
   add_mod_arg(H,Module,H1),
   add_bdd_arg_db(H,BDDH,DB,Module,H2),
   process_body_def_db(T,BDD2,BDD1,DB,Vars,Vars1,Rest,Module).
 
 process_body_def_db([\+H|T],BDD,BDD1,DB,Vars,Vars1,
-[neg(H1)|Rest],
-Module):-
+[neg(H1)|Rest],Module):-
   given_cw(H),!,
   add_mod_arg(H,Module,H1),
   process_body_def_db(T,BDD,BDD1,DB,Vars,Vars1,Rest,Module).
@@ -2740,16 +2738,14 @@ process_body_def([\+ H|T],BDD,BDD1,Vars,Vars1,[\+ H|Rest],Module):-
 
 process_body_def([\+H|T],BDD,BDD1,Vars,Vars1,
 [(((neg(H1);\+ H1),one(BDDN));(bagof(BDDH,H2,L)->or_list(L,BDDL),bdd_not(BDDL,BDDN);one(BDDN))),
-  and(BDD,BDDN,BDD2)|Rest],
-Module):-
+  and(BDD,BDDN,BDD2)|Rest],Module):-
   given(H),!,
   add_mod_arg(H,Module,H1),
   add_bdd_arg(H,BDDH,Module,H2),
   process_body_def(T,BDD2,BDD1,Vars,Vars1,Rest,Module).
 
 process_body_def([\+H|T],BDD,BDD1,Vars,Vars1,
-[neg(H1)|Rest],
-Module):-
+[neg(H1)|Rest],Module):-
   given_cw(H),!,
   add_mod_arg(H,Module,H1),
   process_body_def(T,BDD,BDD1,Vars,Vars1,Rest,Module).
@@ -2875,7 +2871,7 @@ process_body([H|T],BDD,BDD1,Vars,Vars1,[H1|Rest],Env,Module):-
 process_body([H|T],BDD,BDD1,Vars,[BDDH,BDD2|Vars1],
 [H1,pita:and(Env,BDD,BDDH,BDD2)|Rest],Env,Module):-
   add_bdd_arg(H,Env,BDDH,Module,H1),
-process_body(T,BDD2,BDD1,Vars,Vars1,Rest,Env,Module).
+  process_body(T,BDD2,BDD1,Vars,Vars1,Rest,Env,Module).
 
 
 given(H):-
