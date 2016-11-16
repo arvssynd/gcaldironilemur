@@ -228,81 +228,81 @@ learn_struct_mcts(DB,R1,R,CLL1):-
   learn_params(DB,user, R1, R3, CLL),
   input_mod(M),
   /*generate_clauses(R1,R2,0,[],Th1), 
-	assert_all(Th1),  
-	assert_all(R2),
-	!,
-	findall(R-HN,(rule(R,HL,_BL,_Lit),length(HL,HN)),L),  
-	keysort(L,LS),
-	get_heads(LS,LSH),  
-	length(LSH,NR),   
-	init(NR,LSH),
-	retractall(v(_,_,_)),
-	length(DB,NEx),  
-	(setting(examples,atoms) ->
-	 setting(group,G),	
-	 derive_bdd_nodes_groupatoms(DB,NEx,G,[],Nodes,0,CLL0,LE,[]),
-	 ! 
-	;
-	 derive_bdd_nodes(DB,NEx,[],Nodes,0,CLL0),
-	 ! 
-	),
-	setting(random_restarts_number,N),
-	format("~nInitial CLL ~f~n~n",[CLL0]),
-	random_restarts(N,Nodes,CLL0,CLL,initial,Par,LE), 
+  assert_all(Th1),  
+  assert_all(R2),
+  !,
+  findall(R-HN,(rule(R,HL,_BL,_Lit),length(HL,HN)),L),  
+  keysort(L,LS),
+  get_heads(LS,LSH),  
+  length(LSH,NR),   
+  init(NR,LSH),
+  retractall(v(_,_,_)),
+  length(DB,NEx),  
+  (setting(examples,atoms) ->
+   setting(group,G),	
+   derive_bdd_nodes_groupatoms(DB,NEx,G,[],Nodes,0,CLL0,LE,[]),
+   ! 
+  ;
+   derive_bdd_nodes(DB,NEx,[],Nodes,0,CLL0),
+   ! 
+  ),
+  setting(random_restarts_number,N),
+  format("~nInitial CLL ~f~n~n",[CLL0]),
+  random_restarts(N,Nodes,CLL0,CLL,initial,Par,LE), 
   format("CLL after EMBLEM = ~f~n",[CLL]),
-	retract_all(Th1),
-	retract_all(R2),
-	!,
-	end, 
-	update_theory(R2,Par,R3),*/ 
-	write('updated Theory'),nl,
-	write_rules(R3,user_output),
+  retract_all(Th1),
+  retract_all(R2),
+  !,
+  end, 
+  update_theory(R2,Par,R3),*/ 
+  write('updated Theory'),nl,
+  write_rules(R3,user_output),
 
-	assert(mcts_best_score(CLL)),
-	assert(mcts_best_theory(R3)),
-	assert(mcts_theories(0)),
+  assert(mcts_best_score(CLL)),
+  assert(mcts_best_theory(R3)),
+  assert(mcts_theories(0)),
 
-	assert(mcts_best_theories_iteration([])),	
+  assert(mcts_best_theories_iteration([])),	
 
-	mcts(R3,CLL,DB),
-	%assert(mcts_best_by_cll(-1e20)),
-	%assert(mcts_best_theory_by_cll([])),
-	%assert(mcts_best_by_visits(-1e20)),
-	%select_the_best_bycll,
-	%select_the_best_byvisits,	
-
-	retract(mcts_best_theories_iteration(BestsIter)),
-	format("\nBests found at : ~w",[BestsIter]),
+  mcts(R3,CLL,DB),
+  %assert(mcts_best_by_cll(-1e20)),
+  %assert(mcts_best_theory_by_cll([])),
+  %assert(mcts_best_by_visits(-1e20)),
+  %select_the_best_bycll,
+  %select_the_best_byvisits,	
+ 
+  retract(mcts_best_theories_iteration(BestsIter)),
+  format("\nBests found at : ~w",[BestsIter]),
 	
-	retract(mcts_theories(_)),
-	retract(mcts_best_score(CLLNew)),
-	retract(mcts_best_theory(RNew)),
+  retract(mcts_theories(_)),
+  retract(mcts_best_score(CLLNew)),
+  retract(mcts_best_theory(RNew)),
 
-	(M:local_setting(mcts_covering,true) ->
+  (M:local_setting(mcts_covering,true) ->
 		
-		M:local_setting(mcts_maxrestarts,MctsRestarts),
-		mcts_restart(CurrentRestart),
+    M:local_setting(mcts_maxrestarts,MctsRestarts),
+    mcts_restart(CurrentRestart),
 	
-		Improvement is CLLNew - CLL,
-		( (CLLNew > CLL, Improvement > 0.1, CurrentRestart =< MctsRestarts) ->
+    Improvement is CLLNew - CLL,
+    ( (CLLNew > CLL, Improvement > 0.1, CurrentRestart =< MctsRestarts) ->
 	 
-			format("\n---------------- Improvement ~w",[Improvement]),
-			retractall(node(_, _, _, _, _, _, _)),
-			retract(M:local_setting(max_rules,ParRules)),
-			ParRules1 is ParRules + 1,
-			assert(M:local_setting(max_rules,ParRules1)),
-			retract(mcts_restart(Restart)),
-			Restart1 is Restart + 1,
-			assert(mcts_restart(Restart1)),	 
-			learn_struct_mcts(DB,RNew,R,CLL1)
-		;
-			CLL1 = CLLNew,
-			R = RNew
-		)
-	;
-		CLL1 = CLLNew,
-		R = RNew
-	).
+      format("\n---------------- Improvement ~w",[Improvement]),
+      retractall(node(_, _, _, _, _, _, _)),
+      retract(M:local_setting(max_rules,ParRules)),
+      ParRules1 is ParRules + 1,
+      assert(M:local_setting(max_rules,ParRules1)),
+      retract(mcts_restart(Restart)),
+      Restart1 is Restart + 1,
+      assert(mcts_restart(Restart1)),	 
+      learn_struct_mcts(DB,RNew,R,CLL1)
+    ;
+      CLL1 = CLLNew,
+      R = RNew
+    )
+  ;
+    CLL1 = CLLNew,
+    R = RNew
+  ).
 
 
 learn_params(DB,M,R0,R,Score):-  %Parameter Learning
@@ -320,7 +320,7 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   retractall(pita:v(_,_,_)),
   length(DB,NEx),
   (M:local_setting(examples,atoms)->
-		M:local_setting(group,G),  
+    M:local_setting(group,G),  
     derive_bdd_nodes_groupatoms(DB,M,ExData,NEx,G,[],Nodes,0,CLL0,LE,[]),!   
   ; 
    derive_bdd_nodes(DB,ExData,NEx,[],Nodes,0,CLL0),!      
@@ -331,67 +331,67 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   end(ExData),
   retract_all(Th0Ref),
   retract_all(R1Ref),!,
-	update_theory_par(R1,Par,R). %replaces in R1 the probabilities Par and outputs R 				 
+  update_theory_par(R1,Par,R). %replaces in R1 the probabilities Par and outputs R 				 
 
-	/*
-	retract(mcts_best_by_cll(CLL1)),
-	retract(mcts_best_theory_by_visits(_)),
-	retract(mcts_best_theory_by_cll(R)).
-	*/
+  /*
+  retract(mcts_best_by_cll(CLL1)),
+  retract(mcts_best_theory_by_visits(_)),
+  retract(mcts_best_theory_by_cll(R)).
+  */
 
 
 select_the_best_bycll:-
-	node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
-	( VISITED >= 0 ->
-		mcts_best_by_cll(BS),
-		Score is CLL,
-		( Score =< 0, Score >= BS ->
-			format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
-			retract(mcts_best_by_cll(_)),
-			assert(mcts_best_by_cll(Score)),
-			retract(mcts_best_theory_by_cll(_)),
-			assert(mcts_best_theory_by_cll(Theory))
-		;
-			true
-		)
-	;
-		true
-	),
-	fail.
-	select_the_best_bycll.
+  node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
+  ( VISITED >= 0 ->
+    mcts_best_by_cll(BS),
+    Score is CLL,
+    ( Score =< 0, Score >= BS ->
+      format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
+      retract(mcts_best_by_cll(_)),
+      assert(mcts_best_by_cll(Score)),
+      retract(mcts_best_theory_by_cll(_)),
+      assert(mcts_best_theory_by_cll(Theory))
+    ;
+      true
+    )
+  ;
+    true
+  ),
+  fail.
+  select_the_best_bycll.
 
 
 select_the_best_byvisits:-
-	node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
-	( VISITED >= 0 ->
-		mcts_best_by_visits(BS),
-		Score is VISITED,
-		( Score >= BS ->
-			format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
-			retract(mcts_best_by_visits(_)),
-			assert(mcts_best_by_visits(Score))
-		;
-			true
-		)
-	;
-		true
-	),
-	fail.
-	select_the_best_byvisits.
+  node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
+  ( VISITED >= 0 ->
+    mcts_best_by_visits(BS),
+    Score is VISITED,
+    ( Score >= BS ->
+      format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
+      retract(mcts_best_by_visits(_)),
+      assert(mcts_best_by_visits(Score))
+    ;
+      true
+    )
+  ;
+    true
+  ),
+  fail.
+  select_the_best_byvisits.
 
 
 mcts(InitialTheory,InitialScore,DB):-
-	% node(ID, CHILDRENS, PARENT, CLL, Theory, VISITED, BACKSCORE)
- 	input_mod(M),
-	assert(node(1, [], 0, InitialScore , InitialTheory, 0 , 0)),
-	assert(lastid(1)),
-	M:local_setting(mcts_iter,I),
-	assert(mcts_iteration(0)),
-	cycle_mcts(I,DB),
-	retract(mcts_iteration(_)),
-	retract(lastid(Nodes)),
-%	print_graph,	
-	format("\nTree size: ~w nodes.",[Nodes]).
+  % node(ID, CHILDRENS, PARENT, CLL, Theory, VISITED, BACKSCORE)
+  input_mod(M),
+  assert(node(1, [], 0, InitialScore , InitialTheory, 0 , 0)),
+  assert(lastid(1)),
+  M:local_setting(mcts_iter,I),
+  assert(mcts_iteration(0)),
+  cycle_mcts(I,DB),
+  retract(mcts_iteration(_)),
+  retract(lastid(Nodes)),
+  %print_graph,	
+  format("\nTree size: ~w nodes.",[Nodes]).
 
 
 print_graph:-
