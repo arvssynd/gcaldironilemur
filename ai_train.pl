@@ -4,7 +4,7 @@
 :- use_rendering(c3).
 :- use_rendering(lpad).
 :- endif.
-:- set_prolog_flag(unknown,warning).
+%:- set_prolog_flag(unknown,warning).
 :-lemur.
 
 :- set_lm(depth_bound,false).
