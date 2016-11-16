@@ -63,13 +63,10 @@ Bisogna modificare revise.pl per controllare che gli atomi che si aggiungono nel
 %?- t(DV).
 %DV = [[_A,1],[_B,0],[_C,0]]	- lista di coppie [variabile,profondità massima]
 
-/* dv_lemur declarations end*/
-
 default_setting_lm(epsilon_em,0.0001).
 default_setting_lm(epsilon_em_fraction,0.00001).
 default_setting_lm(eps,0.0001).
 default_setting_lm(eps_f,0.00001).
-/* revise_lemur declarations end*/
 
 /* if the difference in log likelihood in two successive em iteration is smaller
 than epsilon_em, then EM stops */
@@ -101,21 +98,16 @@ default_setting_lm(specialization,mode).
 default_setting_lm(seed,rand(10,1231,30322)).  
 default_setting_lm(score,ll).
 /* allowed values: ll aucpr */
-/* slipcover_lemur.pl declarations end*/
 
 default_setting_lm(mcts_beamsize,3).
 default_setting_lm(mcts_visits,1e20).
-%setting(max_rules,5).
-
 default_setting_lm(max_var,4).
-
 default_setting_lm(mcts_max_depth,8).
 default_setting_lm(mcts_c,0.7).
 default_setting_lm(mcts_iter,200).
 default_setting_lm(mcts_maxrestarts,20).
 default_setting_lm(mcts_covering,true).
 default_setting_lm(max_rules,1).
-
 default_setting_lm(epsilon_parsing, 1e-5).
 default_setting_lm(tabling, off).
 default_setting_lm(bagof,false).
@@ -136,7 +128,8 @@ default_setting_lm(single_var,false). %false:1 variable for every grounding of a
 induce_lm(TrainFolds,P):-
   induce_rules(TrainFolds,P0),
   rules2terms(P0,P).
-%  generate_clauses(P0,P,0,[],_Th).
+  %generate_clauses(P0,P,0,[],_Th).
+
 
 /** 
  * induce(+TrainFolds:list_of_atoms,+TestFolds:list_of_atoms,-P:probabilistic_program,-LL:float,-AUCROC:float,-ROC:dict,-AUCPR:float,-PR:dict) is det
@@ -155,8 +148,9 @@ induce_lm(TrainFolds,TestFolds,ROut,LL,AUCROC,ROC,AUCPR,PR):-
   rules2terms(R,ROut),
   test(ROut,TestFolds,LL,AUCROC,ROC,AUCPR,PR).
 
+
 induce_rules(Folds,R):-
-%tell(ciao),
+  %tell(ciao),
   input_mod(M),
   make_dynamic(M),
   set_lm(compiling,on),
@@ -170,10 +164,10 @@ induce_rules(Folds,R):-
   %find_ex(DB,_LG,NPos,_Neg),
   
   statistics(walltime,[_,_]),
-	format("\nMonte Carlo Tree Search for LPAD Structure Learning\n",[]),
-%	assert(filedot('bdd.dot')),
+  format("\nMonte Carlo Tree Search for LPAD Structure Learning\n",[]),
+  %assert(filedot('bdd.dot')),
 
-%  findall(C,M:bg(C),RBG),
+  %findall(C,M:bg(C),RBG),
   (M:bg(RBG0)->
     process_clauses(RBG0,[],_,[],RBG),
     generate_clauses(RBG,_RBG1,0,[],ThBG), 
@@ -184,12 +178,12 @@ induce_rules(Folds,R):-
     true
   ),
   findall(BL , modeb(_,BL), BLS0),
-        sort(BLS0,BSL),
-        assert(mcts_modeb(BSL)),
+  sort(BLS0,BSL),
+  assert(mcts_modeb(BSL)),
 
-        assert(mcts_restart(1)),
-        learn_struct_mcts(DB,R1,R2,Score2),
-        retract(mcts_restart(_)),
+  assert(mcts_restart(1)),
+  learn_struct_mcts(DB,R1,R2,Score2),
+  retract(mcts_restart(_)),
   learn_params(DB,M,R2,R,Score),  
 
   format2("~nRefinement score  ~f - score after EMBLEM ~f~n",[Score2,Score]),
@@ -198,7 +192,7 @@ induce_rules(Folds,R):-
   write2('\n\n'),
   format2('Wall time ~f */~n',[WTS]),
   write_rules2(R,user_output),
-%  told,
+  %told,
   set_lm(compiling,off),
   (M:bg(RBG0)->
     retract_all(ThBGRef),
@@ -206,6 +200,7 @@ induce_rules(Folds,R):-
   ;
     true
   ).
+
 
 make_dynamic(M):-
   M:(dynamic int/1),
@@ -217,7 +212,8 @@ make_dynamic(M):-
   findall(DH,(M:modeh(_,_,_,LD),member(DH,LD)),LDDH),
   append([LO,LI,LIC,LDH,LDD,LDDH],L0),
   remove_duplicates(L0,L),
-maplist(to_dyn(M),L).
+  maplist(to_dyn(M),L).
+
 
 to_dyn(M,P/A):-
   A1 is A+1,
@@ -228,10 +224,9 @@ to_dyn(M,P/A):-
   M:(dynamic P/A3).
 
 
-
 learn_struct_mcts(DB,R1,R,CLL1):-  
-	learn_params(DB,user, R1, R3, CLL),
- 	input_mod(M),
+  learn_params(DB,user, R1, R3, CLL),
+  input_mod(M),
 	/*generate_clauses(R1,R2,0,[],Th1), 
 	assert_all(Th1),  
 	assert_all(R2),
@@ -263,7 +258,6 @@ learn_struct_mcts(DB,R1,R,CLL1):-
 	write('updated Theory'),nl,
 	write_rules(R3,user_output),
 
-
 	assert(mcts_best_score(CLL)),
 	assert(mcts_best_theory(R3)),
 	assert(mcts_theories(0)),
@@ -271,11 +265,11 @@ learn_struct_mcts(DB,R1,R,CLL1):-
 	assert(mcts_best_theories_iteration([])),	
 
 	mcts(R3,CLL,DB),
-%	assert(mcts_best_by_cll(-1e20)),
-%	assert(mcts_best_theory_by_cll([])),
-%	assert(mcts_best_by_visits(-1e20)),
-%	select_the_best_bycll,
-%	select_the_best_byvisits,	
+	%assert(mcts_best_by_cll(-1e20)),
+	%assert(mcts_best_theory_by_cll([])),
+	%assert(mcts_best_by_visits(-1e20)),
+	%select_the_best_bycll,
+	%select_the_best_byvisits,	
 
 	retract(mcts_best_theories_iteration(BestsIter)),
 	format("\nBests found at : ~w",[BestsIter]),
@@ -284,7 +278,7 @@ learn_struct_mcts(DB,R1,R,CLL1):-
 	retract(mcts_best_score(CLLNew)),
 	retract(mcts_best_theory(RNew)),
 
-	( M:local_setting(mcts_covering,true) ->
+	(M:local_setting(mcts_covering,true) ->
 		
 		M:local_setting(mcts_maxrestarts,MctsRestarts),
 		mcts_restart(CurrentRestart),
@@ -310,6 +304,7 @@ learn_struct_mcts(DB,R1,R,CLL1):-
 		R = RNew
 	).
 
+
 learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   generate_clauses(R0,R1,0,[],Th0), 
   input_mod(M),
@@ -325,7 +320,7 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   retractall(pita:v(_,_,_)),
   length(DB,NEx),
   (M:local_setting(examples,atoms)->
-    M:local_setting(group,G),  
+		M:local_setting(group,G),  
     derive_bdd_nodes_groupatoms(DB,M,ExData,NEx,G,[],Nodes,0,CLL0,LE,[]),!   
   ; 
    derive_bdd_nodes(DB,ExData,NEx,[],Nodes,0,CLL0),!      
@@ -336,13 +331,15 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   end(ExData),
   retract_all(Th0Ref),
   retract_all(R1Ref),!,
-update_theory_par(R1,Par,R). %replaces in R1 the probabilities Par and outputs R 				 
+	update_theory_par(R1,Par,R). %replaces in R1 the probabilities Par and outputs R 				 
 
-/*
+	/*
 	retract(mcts_best_by_cll(CLL1)),
-%	retract(mcts_best_theory_by_visits(_)),
+	retract(mcts_best_theory_by_visits(_)),
 	retract(mcts_best_theory_by_cll(R)).
 	*/
+
+
 select_the_best_bycll:-
 	node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
 	( VISITED >= 0 ->
@@ -361,7 +358,8 @@ select_the_best_bycll:-
 		true
 	),
 	fail.
-select_the_best_bycll.
+	select_the_best_bycll.
+
 
 select_the_best_byvisits:-
 	node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
@@ -379,7 +377,7 @@ select_the_best_byvisits:-
 		true
 	),
 	fail.
-select_the_best_byvisits.
+	select_the_best_byvisits.
 
 
 mcts(InitialTheory,InitialScore,DB):-
@@ -395,6 +393,7 @@ mcts(InitialTheory,InitialScore,DB):-
 %	print_graph,	
 	format("\nTree size: ~w nodes.",[Nodes]).
 
+
 print_graph:-
 	filedot(FileDot),
 	open(FileDot,write,S),
@@ -406,14 +405,15 @@ print_graph:-
 	print_graph([1],S),
 	format(S,"}",[]),
 	close(S).
-%print_graph([],S).
+
+
 print_graph([ID|R],S):-
 	node(ID, Childs, Parent , CLL, Theory, Visited, Backscore),
 	print_edges(ID,Childs,S),
 	print_graph(R,S),
 	print_graph(Childs,S).
-print_edges(ID,[],S):-!.
-print_edges(ID,[ID1|R],S):-
+	print_edges(ID,[],S):-!.
+	print_edges(ID,[ID1|R],S):-
 	node(ID1, Childs, Parent , CLL, Theory, Visited, Backscore),
 	(Visited > 1 ->
 	 format(S,"~w -> ~w;\n",[ID,ID1])
@@ -422,6 +422,7 @@ print_edges(ID,[ID1|R],S):-
 	 true
 	),
 	print_edges(ID,R,S).
+
 
 backup_transposition(1,Reward,_):-
 	!,
@@ -457,8 +458,11 @@ check_transposition(NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	lastid(Nodes),
 	check_transposition(Nodes,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
+
 check_transposition(1,NodeID,_,SigmoidValue,ParentsTranspose):-
 	!.
+
+
 check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node \== NodeID,
 	!,
@@ -471,6 +475,7 @@ check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	),
 	Node1 is Node - 1,
 	check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
+
 	
 check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
@@ -480,42 +485,44 @@ check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 backup_amaf(1,Reward,_):-
 	!,
 	(retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
-	 true
+	 	true
 	;
-	 format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
-	 throw(no_node_id(NodeID))
+	 	format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
+	 	throw(no_node_id(NodeID))
 	),
 	Visited1 is Visited + 1,
 	assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)).	
+
+
 backup_amaf(NodeID,Reward,ParentsTranspose):-
 	(retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
-	 true
+		true
 	;
-	 format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
-	 throw(no_node_id(NodeID))
+	 	format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
+	 	throw(no_node_id(NodeID))
 	),
 	(member(NodeID,ParentsTranspose) -> 
-	 Backscore1 is Backscore,
-	 Visited1 is Visited
-%	 format("~w- ",[NodeID])	 
+	 	Backscore1 is Backscore,
+	 	Visited1 is Visited
+		%format("~w- ",[NodeID])	 
 	;
-	 (PSLL =:= 1  ->
-		 Backscore1 is Backscore + Reward
+	 	(PSLL =:= 1  ->
+		 	Backscore1 is Backscore + Reward
 	 ;
 	         SigmoidValue is 1 / (1 - PSLL),
-		 ( Reward > SigmoidValue ->
-			 Backscore1 is Backscore + Reward
-		 ;
-			 Backscore1 is Backscore + SigmoidValue
-%			 Backscore1 is Backscore + Reward
+		 	( Reward > SigmoidValue ->
+			 	Backscore1 is Backscore + Reward
+		 ;	
+				Backscore1 is Backscore + SigmoidValue
+				%Backscore1 is Backscore + Reward
 		 )
 	 ),
 
 	 Visited1 is Visited + 1
-%	 format("~w+ ",[NodeID])
+	 %format("~w+ ",[NodeID])
 	),
 	assert(node(NodeID, Childs, Parent , PSLL, MLN, Visited1, Backscore1)).
-%%%	backup_amaf(Parent,Reward,ParentsTranspose).
+	%backup_amaf(Parent,Reward,ParentsTranspose).
 
 
 check_amaf(NodeID,Theory,SigmoidValue,ParentsTranspose):-
@@ -528,12 +535,14 @@ check_amaf(1,NodeID,_,SigmoidValue,ParentsTranspose):-
 	Visited1 is Visited + 1,
 	assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)),
 	!.
+
+
 check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node \== NodeID,
 	!,
 	node(Node, Childs, Parent , CLL, TheoryN, Visited, Backscore),
 	( subsume_theory(TheoryN,Theory) ->
-%%%		format("\n\t ~w ~w: ",[TheoryN,Theory]),
+		%format("\n\t ~w ~w: ",[TheoryN,Theory]),
 		backup_amaf(Node,SigmoidValue,ParentsTranspose)
 	;
 		true
@@ -541,6 +550,7 @@ check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
 	check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 	
+
 check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
 	check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
@@ -552,23 +562,28 @@ subsume_theory(Theory,TheoryN):-
 	subsume_theory1(Theory1,TheoryN1),
 	!.
 
-/*skolemize(Theory,Theory1):-
+	/*
+	skolemize(Theory,Theory1):-
 	copy_term(Theory,Theory1),
 	term_variables(Theory1,Vars),
 	skolemize1(Vars,1).
 
-skolemize1([],_).
-skolemize1([Var|R],K):-
+	skolemize1([],_).
+	skolemize1([Var|R],K):-
 	atomic_list_concat([s,K],Skolem),
 	Var = Skolem,
 	K1 is K + 1,
 	skolemize1(R,K1).
-*/
+	*/
+
 
 subsume_theory1([],_).
+
+
 subsume_theory1([Rule|R],TheoryN):-
 	subsume_theory2(Rule,TheoryN,NewTheoryN),
 	subsume_theory1(R,NewTheoryN).
+
 
 subsume_theory2(Rule,[Rule1|R],R):-
 	Rule = rule(_,[H: _, _: _],Body,_),
@@ -576,6 +591,8 @@ subsume_theory2(Rule,[Rule1|R],R):-
 	H = H1,
 	subsume_body(Body,Body1),
 	!.
+
+
 subsume_theory2(Rule,[Rule1|R],[Rule1|R1]):-
 	subsume_theory2(Rule,R,R1).
 	
@@ -585,11 +602,14 @@ subsume_body(Body,Body1):-
 	length(Body1,L1),
 	L =< L1,
 	subsume_body1(Body,Body1).
+
+
 subsume_body1([],_).
+
+
 subsume_body1([L|R],Body):-
 	nth1(_,Body,L,Rest),
 	subsume_body1(R,Rest).	
-
 
 
 same_theory(Theory0,TheoryN):-
