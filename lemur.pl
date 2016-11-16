@@ -406,7 +406,6 @@ print_graph:-
 	format(S,"}",[]),
 	close(S).
 
-
 print_graph([ID|R],S):-
 	node(ID, Childs, Parent , CLL, Theory, Visited, Backscore),
 	print_edges(ID,Childs,S),
@@ -458,10 +457,8 @@ check_transposition(NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	lastid(Nodes),
 	check_transposition(Nodes,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-
 check_transposition(1,NodeID,_,SigmoidValue,ParentsTranspose):-
 	!.
-
 
 check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node \== NodeID,
@@ -476,7 +473,6 @@ check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
 	check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-	
 check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
 	check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
@@ -492,7 +488,6 @@ backup_amaf(1,Reward,_):-
 	),
 	Visited1 is Visited + 1,
 	assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)).	
-
 
 backup_amaf(NodeID,Reward,ParentsTranspose):-
 	(retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
@@ -536,7 +531,6 @@ check_amaf(1,NodeID,_,SigmoidValue,ParentsTranspose):-
 	assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)),
 	!.
 
-
 check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node \== NodeID,
 	!,
@@ -549,7 +543,6 @@ check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	),
 	Node1 is Node - 1,
 	check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
-	
 
 check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 	Node1 is Node - 1,
@@ -579,7 +572,6 @@ subsume_theory(Theory,TheoryN):-
 
 subsume_theory1([],_).
 
-
 subsume_theory1([Rule|R],TheoryN):-
 	subsume_theory2(Rule,TheoryN,NewTheoryN),
 	subsume_theory1(R,NewTheoryN).
@@ -591,7 +583,6 @@ subsume_theory2(Rule,[Rule1|R],R):-
 	H = H1,
 	subsume_body(Body,Body1),
 	!.
-
 
 subsume_theory2(Rule,[Rule1|R],[Rule1|R1]):-
 	subsume_theory2(Rule,R,R1).
@@ -606,7 +597,6 @@ subsume_body(Body,Body1):-
 
 subsume_body1([],_).
 
-
 subsume_body1([L|R],Body):-
 	nth1(_,Body,L,Rest),
 	subsume_body1(R,Rest).	
@@ -619,10 +609,13 @@ same_theory(Theory0,TheoryN):-
 	same_theory1(Theory,TheoryN),
 	!.
 
+
 same_theory1([],[]).
+
 same_theory1([Rule|R],TheoryN):-
 	same_theory2(Rule,TheoryN,NewTheoryN),
 	same_theory1(R,NewTheoryN).
+
 
 same_theory2(Rule,[Rule1|R],R):-
 	Rule = rule(_,[H: _, _: _],Body,_),
@@ -630,6 +623,7 @@ same_theory2(Rule,[Rule1|R],R):-
 	H = H1,
 	same_body(Body,Body1),
 	!.
+
 same_theory2(Rule,[Rule1|R],[Rule1|R1]):-
 	same_theory2(Rule,R,R1).
 	
@@ -638,19 +632,18 @@ same_body(Body,Body1):-
 	length(Body,L),
 	length(Body1,L),
 	same_body1(Body,Body1).
+
+
 same_body1([],[]).
+
 same_body1([L|R],Body):-
 	nth1(_,Body,L,Rest),
 	same_body1(R,Rest).	
-
-%
-	
-
-
 	
 
 cycle_mcts(0,_):-
 	!.
+
 cycle_mcts(K,DB):-
  	input_mod(M),
 	M:local_setting(mcts_iter,MaxI),
@@ -660,14 +653,14 @@ cycle_mcts(K,DB):-
 	format("\nIteration ~w",[Iteration]),
 	tree_policy(1,NodeID,DB,1,Depth),
 	( node(NodeID, Childs, Parent , CLL, Theory, Visited, Backscore) ->
-	%% do update with the sigmoid of the Score
-	%% SigmoidValue is ((1 / (1 + exp(-PSLL)))/0.5),
-	%% format("\n~w: ~w ~w Sigmoid ~w",[K,MLN,PSLL,SigmoidValue]),	
+	% do update with the sigmoid of the Score
+	% SigmoidValue is ((1 / (1 + exp(-PSLL)))/0.5),
+	% format("\n~w: ~w ~w Sigmoid ~w",[K,MLN,PSLL,SigmoidValue]),	
 		M:local_setting(mcts_max_depth, MaxDepth),
 		random(1,MaxDepth,MaxDepth1),
 		default_policy(Theory,-1e20,Reward,_,BestDefaultTheory,DB,1,MaxDepth1),
 	% do update with the sigmoid of the Score
-%%%	SigmoidValue is ((1 / (1 + exp(-Reward)))/0.5),
+	% SigmoidValue is ((1 / (1 + exp(-Reward)))/0.5),
 
                 (Reward=:=1->
 	   	  SigmoidValue=1e20
@@ -676,26 +669,27 @@ cycle_mcts(K,DB):-
 		),
 		( Reward =\= -1e20 ->
 		
-%	(Reward > CLL ->
-%	 SigmoidValue = 1
-%	;
-%	 SigmoidValue = 0
-%	),
+	% (Reward > CLL ->
+	% SigmoidValue = 1
+	% ;
+	% SigmoidValue = 0
+	% ),
 
-%%%	format("\n~w: ~w \nReward ~w Sigmoid ~w",[K,Theory,Reward,SigmoidValue]),
+			% format("\n~w: ~w \nReward ~w Sigmoid ~w",[K,Theory,Reward,SigmoidValue]),
 			format("\n[Backup reward ~w]",[SigmoidValue]),
 			backup(NodeID,SigmoidValue,Parents),
-																%	check_transposition(NodeID,Theory,SigmoidValue,Parents),
+			%	check_transposition(NodeID,Theory,SigmoidValue,Parents),
 			check_amaf(NodeID,BestDefaultTheory,SigmoidValue,Parents)
 		;
 			format("\n--> no default policy expansion",[])
 		),
 		K1 is K - 1,
-%%%	read(_),
+		%read(_),
 		cycle_mcts(K1,DB)
 	;
 		format("\n--> tree policy end",[])
 	).
+
 
 check_pruning(ID):-
  	input_mod(M),
@@ -709,6 +703,7 @@ check_pruning(ID):-
 	check_pruning(Childs,ID,NumVisits,BeamSize,NewChilds),
 	retract(node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE)),
 	assert(node(ID, NewChilds, Parent , CLL, Theory, VISITED, BACKSCORE)).
+
 check_pruning(_ID).	
 
 check_pruning(Childs,ID,NumVisits,BeamSize,Childs2):-
@@ -720,6 +715,7 @@ check_pruning(Childs,ID,NumVisits,BeamSize,Childs2):-
 	choose_best_childs(Childs1,BeamSize,Childs2),
 	format("\n#Pruning tree ~w ~w",[ID,Childs2]),flush_output,
 	prune(Childs,Childs2).
+
 check_pruning(Childs,_,_NumVisits,_BeamSize,Childs).
 
 
@@ -732,29 +728,38 @@ choose_best_childs(Childs,BeamSize,Childs1):-
 
 
 remove_visisted([],[]).
+
 remove_visisted([V-ID|R],[ID|R1]):-
 	remove_visisted(R,R1).
 
+
 add_visisted([],[]).
+
 add_visisted([ID|R],[V-ID|R1]):-
 	node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE),
 	V is -1 * VISITED,
 	add_visisted(R,R1).
 
+
 prune([],_Childs1).
+
 prune([ID|R],Childs1):-
 	member(ID,Childs1),
 	!,
 	prune(R,Childs1).
+
 prune([ID|R],Childs1):-
 	prune_sub_tree(ID),
 	prune(R,Childs1).
+
 
 prune_sub_tree(ID):-
 	retract(node(ID, Childs, _Parent , _CLL, _Theory, _VISITED, _BACKSCORE)),
 	prune_sub_tree1(Childs).
 
+
 prune_sub_tree1([]).
+
 prune_sub_tree1([ID|R]):-
 	retract(node(ID, Childs, _Parent , _CLL, _Theory, _VISITED, _BACKSCORE)),
 	prune_sub_tree1(Childs),
@@ -762,6 +767,7 @@ prune_sub_tree1([ID|R]):-
 
 
 check_pruning1([],_NumVisits,1,[]).
+
 check_pruning1([ID|R],NumVisits,ToPrune,[ID|R1]):-
 	node(ID, _Childs, _Parent , CLL, _Theory, VISITED, _BACKSCORE),
 	(CLL == 1 ->
@@ -773,31 +779,26 @@ check_pruning1([ID|R],NumVisits,ToPrune,[ID|R1]):-
 	 !,
 	 check_pruning1(R,NumVisits,ToPrune,R1)
 	).
+
 check_pruning1([ID|R],NumVisits,ToPrune,R1):-
 	check_pruning1(R,NumVisits,ToPrune,R1).
 	
 
-
 tree_policy(ID,NodeID,DB,Od,Nd):-
 	input_mod(M),
-%	check_pruning(ID),
-
+	%check_pruning(ID),
 
 	(retract(node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE)) ->
 	 true
 	;
 	 throw(no_node_id(ID))
 	),
-%%%	format("\n Tree policy ~w ~w ~w",[Theory,VISITED, BACKSCORE]),
-	format("\n[Tree Policy ~w, ~w, ~w] ",[ID,VISITED,BACKSCORE]),		flush_output,
-%%%	( VISITED = 0, ID \= 1 ->
+	%format("\n Tree policy ~w ~w ~w",[Theory,VISITED, BACKSCORE]),
+	format("\n[Tree Policy ~w, ~w, ~w] ",[ID,VISITED,BACKSCORE]), flush_output,
+	%( VISITED = 0, ID \= 1 ->
 	( CLL = 1, ID \= 1 ->
 		score_theory(Theory,DB,CLL1,BestTheory,NewTheory),
 		mcts_best_score(BestScore),
-
-%			Ratio is  BestScore / CLL1,
-%			( Ratio > 1.001 ->
-
 		
 		( M:local_setting(mcts_covering,true) ->
 			length(NewTheory,NewTheoryL),	%lemurc
@@ -839,16 +840,16 @@ tree_policy(ID,NodeID,DB,Od,Nd):-
 	
 	Visited1 is VISITED + 1,
 
-%	(CLL = 1 ->
-%	 Visited2 = Visited1,
-%	 (Visited2 == 2 -> Backscore1 = BACKSCORE ; Backscore1 = 0) % in this case the node has been visited by transposition
-%	;
-%	 Visited2 = Visited1,
-%	 Backscore1 = BACKSCORE
-%	),
+	% (CLL = 1 ->
+	% Visited2 = Visited1,
+	%	(Visited2 == 2 -> Backscore1 = BACKSCORE ; Backscore1 = 0) % in this case the node has been visited by transposition
+	%	;
+	%	Visited2 = Visited1,
+	%	Backscore1 = BACKSCORE
+	%	),
 
-	 Visited2 = Visited1,
-	 Backscore1 = BACKSCORE,
+	Visited2 = Visited1,
+	Backscore1 = BACKSCORE,
 
 	
 	(Childs == [] ->
@@ -858,21 +859,21 @@ tree_policy(ID,NodeID,DB,Od,Nd):-
 	;
 	 Od1 is Od + 1,
 	 minmaxvalue(Childs,MinV,MaxV),
-%	 mean_value_level(Childs,Mvl),
+	 %mean_value_level(Childs,Mvl),
 	 once(uct(Childs, VISITED, MinV, MaxV, BestChild)),
-%	 once(uct(Childs, VISITED, BestChild)),	 
+	 %once(uct(Childs, VISITED, BestChild)),	 
 	 tree_policy(BestChild,NodeID,DB,Od1, Nd),
 	 assert(node(ID, Childs, Parent , CLL1, NewTheory, Visited2, Backscore1))
 	).
 
 
-
 default_policy(Theory, Reward, Reward, BestDefaultTheory,BestDefaultTheory,DB, Depth, MaxDepth):-
 	Depth > MaxDepth,
 	!.
+
 default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,Depth,MaxDepth):-
 	input_mod(M),
-%%%	format("\nDefault policy",[]),flush_output,
+	%format("\nDefault policy",[]),flush_output,
 	format("\n[Default Policy ~w]",[Depth]),
 	theory_revisions_r(Theory,Revisions),
 	( Revisions \== [] ->
@@ -880,7 +881,6 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 		random(0,L,K),
 		nth0(K, Revisions,Spec),
 		Depth1 is Depth + 1,
-
 
 		score_theory(Spec,DB,Score,BestTheory,NewTheory),
 		( M:local_setting(mcts_covering,true) ->
@@ -938,9 +938,9 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 	;
 		Reward = PrevR,
 		BestDefaultTheory = PrevBestDefaultTheory
-/*
-
-%%%		format("\n\t Default ~w",[Theory]),
+		
+		/*
+		format("\n\t Default ~w",[Theory]),
 		score_theory(Theory,DB,Score,BestTheory),
 
 		(Score > PrevR ->
@@ -972,9 +972,7 @@ default_policy(Theory,PrevR,Reward,PrevBestDefaultTheory,BestDefaultTheory,DB,De
 		;
 			true
 		)
-
-
-*/
+		*/
 		
 	).
 
@@ -990,6 +988,7 @@ minmaxvalue(Childs,MinV,MaxV):-
 	minmaxvalue(R,V,V,MinV,MaxV).
 
 minmaxvalue([],Min,Max,Min,Max).
+
 minmaxvalue([C|R],PrevMin,PrevMax,MinV,MaxV):-
 	node(C, _, _ , _, _, Visits, Reward),
 	(Visits=:=0->
@@ -1008,6 +1007,8 @@ minmaxvalue([C|R],PrevMin,PrevMax,MinV,MaxV):-
 		Min1 is PrevMin
 	),
 	minmaxvalue(R,Min1,Max1,MinV,MaxV).
+
+
 mean_value_level(Cs,M):-
 	mean_value_level1(Cs,Me),
 	length(Me,L),
@@ -1017,11 +1018,15 @@ mean_value_level(Cs,M):-
 	;
 	  M is S / L
 	).
+
+
 mean_value_level1([],[]).
+
 mean_value_level1([C|R],M1):-
 	node(C, _, _ , 1, _, _Visits, _Reward),
 	!,
 	mean_value_level1(R,M1).
+
 mean_value_level1([C|R],[M|Rm]):-
 	node(C, _, _ , _, _, Visits, Reward),
 	!,
@@ -1032,42 +1037,8 @@ mean_value_level1([C|R],[M|Rm]):-
 		M is (Reward / Visits)
 	).
 
-/*
-uct(Childs, ParentVisits, BestChild):-
-%%%	format("\nUCT ",[]),
-	Childs = [FirstChild|RestChilds],
-	node(FirstChild, _, _ , _, Theory, Visits, Reward),
-	( Visits == 0 ->
-		BestChild = FirstChild
-	;
-		setting(mcts_c,C),
-		UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-%%%		format("~w ",[UCT]),
-		uct(RestChilds, UCT, ParentVisits, FirstChild, BestChild)
-	).
-
-
-uct([], _CurrentBestUCT, _ParentVisits, BestChild, BestChild).
-uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, BestChild) :-
-	node(Child, _, _ , _, Theory, Visits, Reward),
-	( Visits =:= 0 ->
-		BestChild = Child
-	;
-		setting(mcts_c,C),
-		UCT is Reward / Visits + 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-%%%		format("~w ",[UCT]),flush_output,
-		(UCT > CurrentBestUCT ->
-		 uct(RestChilds, UCT, ParentVisits, Child, BestChild)
-		;
-		 uct(RestChilds, CurrentBestUCT, ParentVisits, CurrentBestChild, BestChild)
-		)
-	).
-*/
-
-
 
 uct(Childs, ParentVisits, Min, Max, BestChild):-
-%%%	format("\nUCT ",[]),
 	input_mod(M),
 	Childs = [FirstChild|RestChilds],
 	node(FirstChild, _, _ , Score, Theory, Visits, Reward),
@@ -1096,6 +1067,7 @@ uct(Childs, ParentVisits, Min, Max, BestChild):-
 
 
 uct([], _CurrentBestUCT, _ParentVisits, BestChild, _, _,BestChild).
+
 uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max,BestChild) :-
 	input_mod(M),
 	node(Child, _, _ , Score, Theory, Visits, Reward),
@@ -1129,7 +1101,7 @@ uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max
 
 expand(ID, Theory, ParentCLL, DB, NodeID, Childs):-
 	input_mod(M),
-%%%	format("  expanding...",[]),flush_output,
+	%format("  expanding...",[]),flush_output,
   theory_revisions(Theory,Revisions),
 	!,
 	assert_childs(Revisions,ID,ParentCLL,Childs),
@@ -1140,12 +1112,11 @@ expand(ID, Theory, ParentCLL, DB, NodeID, Childs):-
 	 Visited1 is Visited + 1,
 	 score_theory(Theory1,DB,CLL,BestTheory,NewTheory),
 	 format(" CLL: ~w]",[CLL]),	 
-	 %%%format("\nTree policy: ~w ~w]",[Score, Theory1]),
+	 %format("\nTree policy: ~w ~w]",[Score, Theory1]),
 	 mcts_best_score(BestScore),
 
-%			Ratio is BestScore / CLL,
-%			( Ratio > 1.001 ->
-
+	 %Ratio is BestScore / CLL,
+	 %( Ratio > 1.001 ->
 
 	 ( M:local_setting(mcts_covering,true) ->
 		 length(NewTheory,NewTheoryL), %lemurc
@@ -1183,29 +1154,31 @@ expand(ID, Theory, ParentCLL, DB, NodeID, Childs):-
 	;
 	 NodeID = -1
 	).
-%%%	format("  END",[]),flush_output.
 	
+
 assert_childs([],_,_,[]).
+
 assert_childs([Spec|Rest],P,PCLL,[ID1|Childs]):-
-	% node(ID, CHILDRENS, PARENT, PSLL, MLN, VISITED, BACKSCORE)
+	%node(ID, CHILDRENS, PARENT, PSLL, MLN, VISITED, BACKSCORE)
 	retract(lastid(ID)),
-%%%	format(" ~w",[ID]),flush_output,
+	%format(" ~w",[ID]),flush_output,
 	ID1 is ID + 1,
 	assert(lastid(ID1)),
-%	SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
+	%SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
 	(PCLL=:=1->
 		SigmoidValue=1e20
 	;
 		SigmoidValue is 1 / (1 -  PCLL)
 	),
 	%format(" ~w",[ID1]),
-%%%	score_theory(Spec,DB,CLL),
+	%score_theory(Spec,DB,CLL),
 	assert(node(ID1, [], P, 1 , Spec, 1 , SigmoidValue)),
-%%	assert(node(ID1, [], P, 1 , Spec, 0 , 0)),
+	%assert(node(ID1, [], P, 1 , Spec, 0 , 0)),
 	assert_childs(Rest,P,PCLL,Childs).
 
 
 theory_length([],X,X).
+
 theory_length([T|R],K,K1):-
 	theory_length(R,K,K0),
 	T = rule(_,_,B,_),
@@ -1217,7 +1190,6 @@ theory_length([T|R],K,K1):-
 	).
 
 score_theory(Theory0,DB,Score,Theory,R3):-
-
 	( mcts_theories(0) ->
 		Theory = Theory0
 	;
@@ -1232,10 +1204,11 @@ score_theory(Theory0,DB,Score,Theory,R3):-
 	),
 
 	learn_params(DB, user, Theory, R3, CLL),
-%%%	format("   Scoring....",[]),flush_output,
-% write_rules2(R3,user_output),   flush_output,
-/*  generate_clauses(Theory,R2,0,[],Th1),
-%%%	format("\n ~w\n ~w\n ~w",[Theory,R2,Th1]),
+	/*
+	format("   Scoring....",[]),flush_output,
+	write_rules2(R3,user_output),   flush_output,  
+	generate_clauses(Theory,R2,0,[],Th1),
+	format("\n ~w\n ~w\n ~w",[Theory,R2,Th1]),
   assert_all(Th1),
   assert_all(R2),!,
   findall(RN-HN,(rule(RN,HL,_BL,_Lit),length(HL,HN)),L),
@@ -1255,18 +1228,21 @@ score_theory(Theory0,DB,Score,Theory,R3):-
   random_restarts(N,Nodes,-1e20,CLL,initial,Par,LE),  
   end,
 
-%%%	format("\n Score ~w ~w",[CLL0,CLL]),
-  update_theory_par(R2,Par,R3),*/
+	format("\n Score ~w ~w",[CLL0,CLL]),
+  update_theory_par(R2,Par,R3),
+	*/
 	
   write3('Updated refinement'),write3('\n'),
   write_rules3(R3,user_output), 
   Score = CLL,  
-%%%  nl,write('Score (CLL) '),write(Score),nl,nl,nl,
-%%%	format(" End",[]),flush_output,
+	%nl,write('Score (CLL) '),write(Score),nl,nl,nl,
+	%format(" End",[]),flush_output,
 	!.
+
 
 backup(1,Reward,[]):-
 	!.
+
 backup(NodeID,Reward,[Parent|R]):-
 	(retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
 	 true
@@ -1285,23 +1261,18 @@ backup(NodeID,Reward,[Parent|R]):-
 	;
 		Backscore1 is Backscore + SigmoidValue,
 		Reward1 is SigmoidValue		
-%		Backscore1 is Backscore + Reward,
-%		Reward1 is Reward
+		%Backscore1 is Backscore + Reward,
+		%Reward1 is Reward
 		),
-%%%	format("\n backup ~w ~w",[NodeID,MLN]),
+		%format("\n backup ~w ~w",[NodeID,MLN]),
 	assert(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore1)),
 	backup(Parent,Reward1,R).
 
 
-/**************************************
-	 __END__
-	 New source code for MCLPADS
- **************************************/
 
 /* slipcover_lemur.pl START*/
-
-
-/*learn_params(DB,R0,R,Score):-  %Parameter Learning
+/*
+	learn_params(DB,R0,R,Score):-  %Parameter Learning
   generate_clauses(R0,R1,0,[],Th0), 
   assert_all(Th0),
   assert_all(R1),!,
@@ -1326,6 +1297,7 @@ backup(NodeID,Reward,[Parent|R]):-
   update_theory_par(R1,Par,R).  %replaces in R1 the probabilities Par and outputs R
 */
 
+
 update_theory_par([],_Par,[]).
 
 update_theory_par([def_rule(H,B,L)|T0],Par,[def_rule(H,B,L)|T]):-!,
@@ -1345,6 +1317,7 @@ update_theory_par([rule(N,H,B,L)|T0],Par,[rule(N,H1,B,L)|T]):-
   update_head_par(H,P1,H1),  
   update_theory_par(T0,Par,T).
 
+
 update_theory(R,initial,R):-!.
 
 update_theory([],_Par,[]).
@@ -1361,10 +1334,12 @@ update_theory([rule(N,H,B,L)|T0],Par,[rule(N,H1,B,L)|T]):-
   update_head_par(H,P1,H1),  
   update_theory(T0,Par,T).
 
+
 update_head_par([],[],[]).
 
 update_head_par([H:_P|T0],[HP|TP],[H:HP|T]):-
   update_head_par(T0,TP,T).
+
   
 cycle_beam([],_DB,CL,CL,CLBG,CLBG,_M):-!.
 
@@ -1376,6 +1351,7 @@ cycle_beam(Beam,DB,CL0,CL,CLBG0,CLBG,M):-
   M1 is M-1,%decreases the number of max_iter M
   cycle_beam(NB,DB,CL1,CL,CLBG1,CLBG,M1).
 
+
 cycle_clauses([],_DB,NB,NB,CL,CL,CLBG,CLBG):-!.
 
 cycle_clauses([(RH,_ScoreH)|T],DB,NB0,NB,CL0,CL,CLBG0,CLBG):-
@@ -1384,6 +1360,7 @@ cycle_clauses([(RH,_ScoreH)|T],DB,NB0,NB,CL0,CL,CLBG0,CLBG):-
   write('Number of revisions '),write(NR),nl,
   score_clause_refinements(LR,1,NR,DB,NB0,NB1,CL0,CL1,CLBG0,CLBG1),
   cycle_clauses(T,DB,NB1,NB,CL1,CL,CLBG1,CLBG).
+
 
 score_clause_refinements([],_N,_NR,_DB,NB,NB,CL,CL,CLBG,CLBG).
 
@@ -1453,10 +1430,12 @@ score_clause_refinements([R1|T],Nrev,NRef,DB,NB0,NB,CL0,CL,CLBG0,CLBG):-
   Nrev1 is Nrev+1,  
   score_clause_refinements(T,Nrev1,NRef,DB,NB1,NB,CL1,CL,CLBG1,CLBG).
 
+
 range_restricted(rule(_N,HL,BL,_Lit)):-
   term_variables(HL,VH),
   term_variables(BL,VB),
   sublisteq(VH,VB).
+
 
 sublisteq([],_).
 
@@ -1464,16 +1443,21 @@ sublisteq([H|T],L):-
   member_eq(H,L),
   sublisteq(T,L).
 
+
 target(R):-
   get_output_preds(R,O),
   member(T,O),
   output(T),!.
 
+
 get_output_preds(rule(_N,HL,_BL,_Lit),O):-
   scan_head(HL,[],O).
 
+
 scan_head(['':_],O,O):-!.
+
 scan_head([],O,O):-!.
+
 scan_head([H:_P|T],O0,O):-
   functor(H,F,N),
   (member(F/N,O0)->
@@ -1484,19 +1468,21 @@ scan_head([H:_P|T],O0,O):-
   scan_head(T,O1,O).
 
 
-
 store_clause_refinement(Ref,RefP,Score):-
   elab_clause_ref(Ref,Ref1),
   recorda(ref_clause,r(Ref1,RefP,Score),_).
+
 
 store_refinement(Ref,RefP,Score):-
   elab_ref(Ref,Ref1),
   recorda(ref,r(Ref1,RefP,Score),_).
 
+
 already_scored_clause(R,R1,Score):-
   elab_ref([R],[rule(H,B)]),
   recorded(ref_clause,r(rule(H,B1),R1,Score),_),
   permutation(B,B1).
+
 
 already_scored(R,R1,Score):-
   elab_ref(R,RR),
@@ -1505,6 +1491,7 @@ already_scored(R,R1,Score):-
 
 elab_clause_ref(rule(_NR,H,B,_Lits),rule(H1,B1)):-
   copy_term((H,B),(H1,B1)).
+
 
 elab_ref([],[]).
 
