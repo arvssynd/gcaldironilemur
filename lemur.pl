@@ -2381,30 +2381,16 @@ generate_goal([P/A|T],M,H,G0,G1):-
   
 
 /*:-[inference_lemur]. */
-
-/* slipcover_lemur.pl END */
-
 /* inference_lemur.pl START */
-%:-load_foreign_files(['bddem'],[],init_my_predicates).
-%:-use_foreign_library(foreign(bddem),install).
 
 :-dynamic p/2,rule_n/1,setting/2.
 
 
 rule_n(0).
 
+
 local_setting(A,B):-
 	setting(A,B).
-
-
-deafult_setting_lm(tabling, off).
-/* on, off */
-
-
-/* values: false, intermediate, all, extra */
-
-
-%:-yap_flag(single_var_warnings, on).
 
 
 load(FileIn,C1,R):-
@@ -2415,7 +2401,6 @@ load(FileIn,C1,R):-
 
 
 add_inter_cl(CL):-
-  %findall(A,(input(A);output(A)),L),
   findall(A,(input(A)),L),
   gen_cl(L,CL).
 
@@ -2446,10 +2431,8 @@ assert_all([H|T],[HRef|TRef]):-
 retract_all([]):-!.
 
 retract_all([H|T]):-
-  %retract(H),
 	erase(H),
-  	retract_all(T).
-
+  retract_all(T).
 
 
 read_clauses_dir(S,[Cl|Out]):-
@@ -2543,17 +2526,17 @@ get_node(Goal,M,Env,B):- %with DB=false
 s(Goal,P,CPUTime1,0,WallTime1,0):-
   statistics(cputime,[_,_]),
   statistics(walltime,[_,_]),
-    init,
-    retractall(v(_,_,_)),
-    abolish_all_tables,
-    add_bdd_arg(Goal,BDD,Goal1),
-    (bagof(BDD,Goal1,L)->
-      or_list(L,B),
-      ret_prob(B,P)
-    ;
-      P=0.0
-    ),
-    end,
+  init,
+  retractall(v(_,_,_)),
+  abolish_all_tables,
+  add_bdd_arg(Goal,BDD,Goal1),
+  (bagof(BDD,Goal1,L)->
+    or_list(L,B),
+    ret_prob(B,P)
+  ;
+    P=0.0
+  ),
+  end,
   statistics(cputime,[_,CT1]),
   CPUTime1 is CT1/1000,
   statistics(walltime,[_,WT1]),
@@ -2600,10 +2583,9 @@ generate_clause(Head,Body,VC,R,Probs,BDDAnd,N,Clause,Module):-
   add_bdd_arg(Head,BDD,Module,Head1),
   Clause=(Head1:-(Body,get_var_n(R,VC,Probs,V),equality(V,N,B),and(BDDAnd,B,BDD))).
 
-
 generate_clause(Head,Env,Body,VC,R,Probs,BDDAnd,N,Clause,Module):-
   add_bdd_arg(Head,Env,BDD,Module,Head1),
-Clause=(Head1:-(Body,pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,N,B),pita:and(Env,BDDAnd,B,BDD))).
+	Clause=(Head1:-(Body,pita:get_var_n(Env,R,VC,Probs,V),pita:equality(Env,V,N,B),pita:and(Env,BDDAnd,B,BDD))).
 
 
 generate_rules([],_Env,_Body,_VC,_R,_Probs,_BDDAnd,_N,[],_Module).
@@ -2614,7 +2596,8 @@ generate_rules([Head:_P1,'':_P2],Env,Body,VC,R,Probs,BDDAnd,N,[Clause],Module):-
 generate_rules([Head:_P|T],Env,Body,VC,R,Probs,BDDAnd,N,[Clause|Clauses],Module):-
   generate_clause(Head,Env,Body,VC,R,Probs,BDDAnd,N,Clause,Module),
   N1 is N+1,
-generate_rules(T,Env,Body,VC,R,Probs,BDDAnd,N1,Clauses,Module).
+	generate_rules(T,Env,Body,VC,R,Probs,BDDAnd,N1,Clauses,Module).
+
 
 generate_rules_db([],_Body,_VC,_R,_Probs,_DB,_BDDAnd,_N,[],_Module):-!.
 
@@ -2747,8 +2730,6 @@ process_body_def_db([H|T],BDD,BDD1,DB,Vars,[BDD,BDDH|Vars1],[H1,and(BDD,BDDH,BDD
   add_bdd_arg_db(H,BDDH,DB,Module,H1),
   process_body_def_db(T,BDD2,BDD1,DB,Vars,Vars1,Rest,Module).
 
-
-
   
 process_body_def([],BDD,BDD,Vars,Vars,[],_Module).
 
@@ -2763,7 +2744,7 @@ process_body_def([\+ H|T],BDD,BDD1,Vars,Vars1,[\+ H|Rest],Module):-
 process_body_def([\+H|T],BDD,BDD1,Vars,Vars1,
 [(((neg(H1);\+ H1),one(BDDN));(bagof(BDDH,H2,L)->or_list(L,BDDL),bdd_not(BDDL,BDDN);one(BDDN))),
   and(BDD,BDDN,BDD2)|Rest],
-  Module):-
+Module):-
   given(H),!,
   add_mod_arg(H,Module,H1),
   add_bdd_arg(H,BDDH,Module,H2),
@@ -2835,8 +2816,6 @@ process_body_cw([H|T],BDD,BDD1,Vars,Vars1,
   process_body_cw(T,BDD,BDD1,Vars,Vars1,Rest,Module).
 
 
-
-
 process_body([],BDD,BDD,Vars,Vars,[],_Env,_Module).
 
 process_body([\+ H|T],BDD,BDD1,Vars,Vars1,[\+ H|Rest],Env,Module):-
@@ -2901,6 +2880,7 @@ process_body([H|T],BDD,BDD1,Vars,[BDDH,BDD2|Vars1],
   add_bdd_arg(H,Env,BDDH,Module,H1),
 process_body(T,BDD2,BDD1,Vars,Vars1,Rest,Env,Module).
 
+
 given(H):-
   input_mod(M),
   functor(H,P,Ar),
@@ -2939,10 +2919,12 @@ set(Parameter,Value):-
   retract(M:local_setting(Parameter,_)),
   assert(M:local_setting(Parameter,Value)).
 
+
 extract_vars_list(L,[],V):-
   rb_new(T),
   extract_vars_tree(L,T,T1),
   rb_keys(T1,V).
+
 
 extract_vars_term(Variable, Var0, Var1) :- 
   var(Variable), !, 
@@ -2955,7 +2937,6 @@ extract_vars_term(Variable, Var0, Var1) :-
 extract_vars_term(Term, Var0, Var1) :- 
   Term=..[_F|Args], 
   extract_vars_tree(Args, Var0, Var1).
-
 
 
 extract_vars_tree([], Var, Var).
@@ -2986,6 +2967,7 @@ extract_vars_list([Term|Tail], Var0, Var1) :-
   extract_vars_list(Tail, Var, Var1).
 */
 
+
 difference([],_,[]).
 
 difference([H|T],L2,L3):-
@@ -3002,23 +2984,22 @@ member_eq(E,[H|_T]):-
 member_eq(E,[_H|T]):-
   member_eq(E,T).
 
+
 add_bdd_arg(A,Env,BDD,A1):-
   A=..[P|Args],
   append(Args,[Env,BDD],Args1),
   A1=..[P|Args1].
-
-
-add_bdd_arg_db(A,Env,BDD,DB,A1):-
-  A=..[P|Args],
-  append(Args,[DB,Env,BDD],Args1),
-  A1=..[P|Args1].
-
 
 add_bdd_arg(A,Env,BDD,Module,A1):-
   A=..[P|Args],
   append(Args,[Env,BDD],Args1),
   A1=..[P,Module|Args1].
 
+
+add_bdd_arg_db(A,Env,BDD,DB,A1):-
+  A=..[P|Args],
+  append(Args,[DB,Env,BDD],Args1),
+  A1=..[P|Args1].
 
 add_bdd_arg_db(A,Env,BDD,DB,Module,A1):-
   A=..[P|Args],
