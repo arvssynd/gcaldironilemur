@@ -1007,205 +1007,205 @@ minmaxvalue([C|R],PrevMin,PrevMax,MinV,MaxV):-
 
 
 mean_value_level(Cs,M):-
-	mean_value_level1(Cs,Me),
-	length(Me,L),
-	sum_list(Me,S),
-	(L=:=0->
-	  M is sign(S)*1e20
-	;
-	  M is S / L
-	).
+  mean_value_level1(Cs,Me),
+  length(Me,L),
+  sum_list(Me,S),
+  ( L=:=0->
+    M is sign(S)*1e20
+  ;
+    M is S / L
+  ).
 
 
 mean_value_level1([],[]).
 
 mean_value_level1([C|R],M1):-
-	node(C, _, _ , 1, _, _Visits, _Reward),
-	!,
-	mean_value_level1(R,M1).
+  node(C, _, _ , 1, _, _Visits, _Reward),
+  !,
+  mean_value_level1(R,M1).
 
 mean_value_level1([C|R],[M|Rm]):-
-	node(C, _, _ , _, _, Visits, Reward),
-	!,
-	mean_value_level1(R,Rm),
-	(Visits=:=0->
-		M is sign(Reward)*1e20
-	;
-		M is (Reward / Visits)
-	).
+  node(C, _, _ , _, _, Visits, Reward),
+  !,
+  mean_value_level1(R,Rm),
+  ( Visits=:=0->
+    M is sign(Reward)*1e20
+  ;
+    M is (Reward / Visits)
+  ).
 
 
 uct(Childs, ParentVisits, Min, Max, BestChild):-
-	input_mod(M),
-	Childs = [FirstChild|RestChilds],
-	node(FirstChild, _, _ , Score, Theory, Visits, Reward),
-	( Visits == 0 ->
-		BestChild = FirstChild
-	;
-		M:local_setting(mcts_c,C),
-%		(Score == 1 ->
-%		 R is Mvl
-%		;
-%		 R is Reward
-%		),
-		(Max-Min=:=0->
-			UCT is sign(Reward/Visits-Min)*1e20
-		;
-			R is Reward,
-		%AA is ((R / Visits) - Min ) / (Max-Min),
-		%BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-			UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
-		),
-%%%		format("\nID ~w UCT ~w ~w/~w=~w ~w",[FirstChild,UCT,R,Visits,AA,BB]),
-%%%		format("\n\t ~w ~w",[Score,Theory]),
-%%%		format("~w ",[UCT]),
-		uct(RestChilds, UCT, ParentVisits, FirstChild, Min,Max, BestChild)
-	).
+  input_mod(M),
+  Childs = [FirstChild|RestChilds],
+  node(FirstChild, _, _ , Score, Theory, Visits, Reward),
+  ( Visits == 0 ->
+    BestChild = FirstChild
+  ;
+    M:local_setting(mcts_c,C),
+%    ( Score == 1 ->
+%      R is Mvl
+%    ;
+%      R is Reward
+%    ),
+    ( Max-Min=:=0->
+      UCT is sign(Reward/Visits-Min)*1e20
+    ;  
+      R is Reward,
+      %AA is ((R / Visits) - Min ) / (Max-Min),
+      %BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+      UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
+    ),
+%%%    format("\nID ~w UCT ~w ~w/~w=~w ~w",[FirstChild,UCT,R,Visits,AA,BB]),
+%%%    format("\n\t ~w ~w",[Score,Theory]),
+%%%    format("~w ",[UCT]),
+    uct(RestChilds, UCT, ParentVisits, FirstChild, Min,Max, BestChild)
+  ).
 
 
 uct([], _CurrentBestUCT, _ParentVisits, BestChild, _, _,BestChild).
 
 uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max,BestChild) :-
-	input_mod(M),
-	node(Child, _, _ , Score, Theory, Visits, Reward),
-	( Visits == 0 ->
-		BestChild = Child
-	;
-		M:local_setting(mcts_c,C),		
-%		(Score == 1 ->
-%		 R is Mvl
-%		;
-%		 R is Reward
-%		),
-		(Max-Min=:=0->
-			UCT is sign(Reward/Visits-Min)*1e20
-		;
-			R is Reward,
-		%AA is ((R / Visits) - Min ) / (Max-Min),
-		%BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
-			UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
-		),
-%%%		format("\nID ~w UCT ~w ~w/~w=~w ~w",[Child,UCT,R,Visits,AA,BB]),
-%%%		format("\n\t ~w ~w",[Score,Theory]),		
-%%%		format("~w ",[UCT]),flush_output,
-		(UCT > CurrentBestUCT ->
-		 uct(RestChilds, UCT, ParentVisits, Child, Min, Max, BestChild)
-		;
-		 uct(RestChilds, CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max, BestChild)
-		)
-	).
+  input_mod(M),
+  node(Child, _, _ , Score, Theory, Visits, Reward),
+  ( Visits == 0 ->
+    BestChild = Child
+  ;
+    M:local_setting(mcts_c,C),		
+%   ( Score == 1 ->
+%     R is Mvl
+%   ;
+%     R is Reward
+%   ),
+    ( Max-Min=:=0->
+      UCT is sign(Reward/Visits-Min)*1e20
+    ;
+      R is Reward,
+      %AA is ((R / Visits) - Min ) / (Max-Min),
+      %BB is 2 * C * sqrt(2 * log(ParentVisits) / Visits),
+      UCT is ((R / Visits) - Min ) / (Max-Min) + 2 * C * sqrt(2 * log(ParentVisits) / Visits)
+    ),
+%%%   format("\nID ~w UCT ~w ~w/~w=~w ~w",[Child,UCT,R,Visits,AA,BB]),
+%%%   format("\n\t ~w ~w",[Score,Theory]),		
+%%%   format("~w ",[UCT]),flush_output,
+    ( UCT > CurrentBestUCT ->
+      uct(RestChilds, UCT, ParentVisits, Child, Min, Max, BestChild)
+    ; 
+      uct(RestChilds, CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max, BestChild)
+    )
+  ).
 
 
 expand(ID, Theory, ParentCLL, DB, NodeID, Childs):-
-	input_mod(M),
-	%format("  expanding...",[]),flush_output,
+  input_mod(M),
+  %format("  expanding...",[]),flush_output,
   theory_revisions(Theory,Revisions),
-	!,
-	assert_childs(Revisions,ID,ParentCLL,Childs),
-	(Childs \= [] ->
-	 Childs = [NodeID|_],
-	 retract(node(NodeID, Childs1, Parent , _, Theory1, Visited, Backscore)),
-	 format("\n[Expand ~w]",[NodeID]),	 
-	 Visited1 is Visited + 1,
-	 score_theory(Theory1,DB,CLL,BestTheory,NewTheory),
-	 format(" CLL: ~w]",[CLL]),	 
-	 %format("\nTree policy: ~w ~w]",[Score, Theory1]),
-	 mcts_best_score(BestScore),
+  !,
+  assert_childs(Revisions,ID,ParentCLL,Childs),
+  ( Childs \= [] ->
+    Childs = [NodeID|_],
+    retract(node(NodeID, Childs1, Parent , _, Theory1, Visited, Backscore)),
+    format("\n[Expand ~w]",[NodeID]),	 
+    Visited1 is Visited + 1,
+    score_theory(Theory1,DB,CLL,BestTheory,NewTheory),
+    format(" CLL: ~w]",[CLL]),	 
+    %format("\nTree policy: ~w ~w]",[Score, Theory1]),
+    mcts_best_score(BestScore),
 
-	 %Ratio is BestScore / CLL,
-	 %( Ratio > 1.001 ->
+    %Ratio is BestScore / CLL,
+    %( Ratio > 1.001 ->
 
-	 ( M:local_setting(mcts_covering,true) ->
-		 length(NewTheory,NewTheoryL), %lemurc
-		 length(Theory1,Theory1L),
-		 ( NewTheoryL = Theory1L ->
-			 LengthCondition = true
-		 ;
-			 LengthCondition = false
-		 )
-	 ;
-		 LengthCondition = true
-	 ),
+    ( M:local_setting(mcts_covering,true) ->
+      length(NewTheory,NewTheoryL), %lemurc
+      length(Theory1,Theory1L),
+      ( NewTheoryL = Theory1L ->
+        LengthCondition = true
+      ;
+        LengthCondition = false
+      )
+    ;
+      LengthCondition = true
+    ),
 
 
-	 ( (CLL > BestScore, LengthCondition = true) ->
-		  format("\n[New best score: ~w ~w]",[CLL, BestTheory]),flush_output,		 
-		 retract(mcts_best_score(_)),
-		 retract(mcts_best_theory(_)),
-		 assert(mcts_best_score(CLL)),
-		 assert(mcts_best_theory(NewTheory)),
-
-		 retract(mcts_best_theories_iteration(BestsIter)),
-		 mcts_iteration(Iteration),
-		 append(BestsIter,[Iteration],BestsIter1),
-		 assert(mcts_best_theories_iteration(BestsIter1)),
+    ( ( CLL > BestScore, LengthCondition = true) ->
+        format("\n[New best score: ~w ~w]",[CLL, BestTheory]),flush_output,		   
+        retract(mcts_best_score(_)),
+        retract(mcts_best_theory(_)),
+        assert(mcts_best_score(CLL)),
+        assert(mcts_best_theory(NewTheory)),
+ 
+        retract(mcts_best_theories_iteration(BestsIter)),
+        mcts_iteration(Iteration),
+        append(BestsIter,[Iteration],BestsIter1),
+        assert(mcts_best_theories_iteration(BestsIter1)),
 
 		 
-		 retract(mcts_theories(Mlns)),
-		 Mlns1 is Mlns + 1,
-		 assert(mcts_theories(Mlns1))
-	 ;
-		 true
-	 ),
-	 assert(node(NodeID, Childs1, Parent , CLL, NewTheory, Visited1, Backscore))
-	;
-	 NodeID = -1
-	).
+        retract(mcts_theories(Mlns)),
+        Mlns1 is Mlns + 1,
+        assert(mcts_theories(Mlns1))
+    ;
+      true
+  ),
+    assert(node(NodeID, Childs1, Parent , CLL, NewTheory, Visited1, Backscore))
+  ;
+    NodeID = -1
+  ).
 	
 
 assert_childs([],_,_,[]).
 
 assert_childs([Spec|Rest],P,PCLL,[ID1|Childs]):-
-	%node(ID, CHILDRENS, PARENT, PSLL, MLN, VISITED, BACKSCORE)
-	retract(lastid(ID)),
-	%format(" ~w",[ID]),flush_output,
-	ID1 is ID + 1,
-	assert(lastid(ID1)),
-	%SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
-	(PCLL=:=1->
-		SigmoidValue=1e20
-	;
-		SigmoidValue is 1 / (1 -  PCLL)
-	),
-	%format(" ~w",[ID1]),
-	%score_theory(Spec,DB,CLL),
-	assert(node(ID1, [], P, 1 , Spec, 1 , SigmoidValue)),
-	%assert(node(ID1, [], P, 1 , Spec, 0 , 0)),
-	assert_childs(Rest,P,PCLL,Childs).
+  %node(ID, CHILDRENS, PARENT, PSLL, MLN, VISITED, BACKSCORE)
+  retract(lastid(ID)),
+  %format(" ~w",[ID]),flush_output,
+  ID1 is ID + 1,
+  assert(lastid(ID1)),
+  %SigmoidValue is ((1 / (1 + exp(-PCLL)))/0.5),
+  (PCLL=:=1->
+    SigmoidValue=1e20
+  ;
+    SigmoidValue is 1 / (1 -  PCLL)
+  ),
+  %format(" ~w",[ID1]),
+  %score_theory(Spec,DB,CLL),
+  assert(node(ID1, [], P, 1 , Spec, 1 , SigmoidValue)),
+  %assert(node(ID1, [], P, 1 , Spec, 0 , 0)),
+  assert_childs(Rest,P,PCLL,Childs).
 
 
 theory_length([],X,X).
 
 theory_length([T|R],K,K1):-
-	theory_length(R,K,K0),
-	T = rule(_,_,B,_),
-	length(B,L),
-	( L > K0 ->
-		K1 = L
-	;
-		K1 = K0
-	).
+  theory_length(R,K,K0),
+  T = rule(_,_,B,_),
+  length(B,L),
+  ( L > K0 ->
+    K1 = L
+  ;
+    K1 = K0
+  ).
 
 score_theory(Theory0,DB,Score,Theory,R3):-
-	( mcts_theories(0) ->
-		Theory = Theory0
-	;
-		theory_length(Theory0,0,Le),
-		( Le > 1 ->
-%			mcts_best_theory(TheoryBest),
-%			append(TheoryBest,Theory0,Theory)
-			Theory = Theory0
-		;
-			Theory = Theory0
-		)
-	),
+  ( mcts_theories(0) ->
+    Theory = Theory0
+  ;
+    theory_length(Theory0,0,Le),
+    ( Le > 1 ->
+%     mcts_best_theory(TheoryBest),
+%     append(TheoryBest,Theory0,Theory)
+      Theory = Theory0
+    ;
+      Theory = Theory0
+    )
+  ),
 
-	learn_params(DB, user, Theory, R3, CLL),
-	/*
-	format("   Scoring....",[]),flush_output,
-	write_rules2(R3,user_output),   flush_output,  
-	generate_clauses(Theory,R2,0,[],Th1),
-	format("\n ~w\n ~w\n ~w",[Theory,R2,Th1]),
+  learn_params(DB, user, Theory, R3, CLL),
+  /*
+  format("   Scoring....",[]),flush_output,
+  write_rules2(R3,user_output),   flush_output,  
+  generate_clauses(Theory,R2,0,[],Th1),
+  format("\n ~w\n ~w\n ~w",[Theory,R2,Th1]),
   assert_all(Th1),
   assert_all(R2),!,
   findall(RN-HN,(rule(RN,HL,_BL,_Lit),length(HL,HN)),L),
@@ -1225,51 +1225,51 @@ score_theory(Theory0,DB,Score,Theory,R3):-
   random_restarts(N,Nodes,-1e20,CLL,initial,Par,LE),  
   end,
 
-	format("\n Score ~w ~w",[CLL0,CLL]),
+  format("\n Score ~w ~w",[CLL0,CLL]),
   update_theory_par(R2,Par,R3),
-	*/
+  */
 	
   write3('Updated refinement'),write3('\n'),
   write_rules3(R3,user_output), 
   Score = CLL,  
-	%nl,write('Score (CLL) '),write(Score),nl,nl,nl,
-	%format(" End",[]),flush_output,
-	!.
+  %nl,write('Score (CLL) '),write(Score),nl,nl,nl,
+  %format(" End",[]),flush_output,
+  !.
 
 
 backup(1,Reward,[]):-
-	!.
+  !.
 
 backup(NodeID,Reward,[Parent|R]):-
-	(retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
-	 true
-	;
-	 format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
-	 throw(no_node_id(NodeID))
-	),
-	(PSLL=:=1->
-		SigmoidValue=1e20
-	;
-		SigmoidValue is 1 / (1 -  PSLL)
-	),
-	( Reward > SigmoidValue ->
-		Backscore1 is Backscore + Reward,
-		Reward1 is Reward
-	;
-		Backscore1 is Backscore + SigmoidValue,
-		Reward1 is SigmoidValue		
-		%Backscore1 is Backscore + Reward,
-		%Reward1 is Reward
-		),
-		%format("\n backup ~w ~w",[NodeID,MLN]),
-	assert(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore1)),
-	backup(Parent,Reward1,R).
+  ( retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
+    true
+  ;
+    format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
+    throw(no_node_id(NodeID))
+  ),
+  ( PSLL=:=1->
+    SigmoidValue=1e20
+  ;
+    SigmoidValue is 1 / (1 -  PSLL)
+  ),
+  ( Reward > SigmoidValue ->
+    Backscore1 is Backscore + Reward,
+    Reward1 is Reward
+  ;
+    Backscore1 is Backscore + SigmoidValue,
+    Reward1 is SigmoidValue		
+    %Backscore1 is Backscore + Reward,
+    %Reward1 is Reward
+    ),
+    %format("\n backup ~w ~w",[NodeID,MLN]),
+    assert(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore1)),
+    backup(Parent,Reward1,R).
 
 
 
 /* slipcover_lemur.pl START*/
 /*
-	learn_params(DB,R0,R,Score):-  %Parameter Learning
+  learn_params(DB,R0,R,Score):-  %Parameter Learning
   generate_clauses(R0,R1,0,[],Th0), 
   assert_all(Th0),
   assert_all(R1),!,
@@ -1711,7 +1711,7 @@ compute_prob([ HE|TE],[HP|TP],[HP-  HE|T],Pos0,Pos,Neg0,Neg):-
 
 compute_aucpr(L,Pos,Neg,A):-
   L=[P_0-E|TL],
-  (E= (\+ _ )->
+  ( E= (\+ _ )->
     FP=1,
     TP=0,
     FN=Pos,
@@ -1724,7 +1724,7 @@ compute_aucpr(L,Pos,Neg,A):-
   ),
   compute_curve_points(TL,P_0,TP,FP,FN,TN,Points),
   Points=[R0-P0|_TPoints],
-  (R0=:=0,P0=:=0->
+  ( R0=:=0,P0=:=0->
     Flag=true
   ;
     Flag=false
@@ -1736,7 +1736,7 @@ compute_curve_points([],_P0,TP,FP,_FN,_TN,[1.0-Prec]):-!,
   Prec is TP/(TP+FP).
 
 compute_curve_points([P- (\+ _)|T],P0,TP,FP,FN,TN,Pr):-!,
-  (P<P0->
+  ( P<P0->
     Prec is TP/(TP+FP),
     Rec is TP/(TP+FN),
     Pr=[Rec-Prec|Pr1],
@@ -1750,7 +1750,7 @@ compute_curve_points([P- (\+ _)|T],P0,TP,FP,FN,TN,Pr):-!,
   compute_curve_points(T,P1,TP,FP1,FN,TN1,Pr1).
 
 compute_curve_points([P- _|T],P0,TP,FP,FN,TN,Pr):-!,
-  (P<P0->
+  ( P<P0->
     Prec is TP/(TP+FP),
     Rec is TP/(TP+FN),
     Pr=[Rec-Prec|Pr1],
@@ -1768,13 +1768,13 @@ area([],_Flag,_Pos,_TPA,_FPA,A,A).
 
 area([R0-P0|T],Flag,Pos,TPA,FPA,A0,A):-
  TPB is R0*Pos,
-  (TPB=:=0->
+  ( TPB=:=0->
     A1=A0,
     FPB=0
   ;
     R_1 is TPA/Pos,
-    (TPA=:=0->
-      (Flag=false->
+    ( TPA=:=0->
+      ( Flag=false->
         P_1=P0
       ;
         P_1=0.0
@@ -1826,14 +1826,14 @@ randomize_head(Int,[H:_|T],P,[H:PH1|NT]):-
 update_head([],[],_N,[]):-!.  
 
 update_head([H:_P|T],[PU|TP],N,[H:P|T1]):-
-	P is PU/N,
-	update_head(T,TP,N,T1).
+  P is PU/N,
+  update_head(T,TP,N,T1).
 /* EM end */    
   
   
 /* utilities */
 generate_file_names(File,FileKB,FileIn,FileBG,FileOut,FileL):-
-	atom_concat(File,'.kb',FileKB),
+  atom_concat(File,'.kb',FileKB),
   atom_concat(File,'.cpl',FileIn),
   atom_concat(File,'.rules',FileOut),
   atom_concat(File,'.bg',FileBG),
