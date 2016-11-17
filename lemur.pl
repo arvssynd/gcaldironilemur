@@ -525,12 +525,12 @@ backup_amaf(NodeID,Reward,ParentsTranspose):-
   %backup_amaf(Parent,Reward,ParentsTranspose).
 
 
-check_amaf(_NodeID,Theory,_SigmoidValue,_ParentsTranspose):-
+check_amaf(_NodeID,Theory,SigmoidValue,_ParentsTranspose):-
   lastid(Nodes),
   format("\nChecking amaf: node ~w, parents ~w: ",[NodeID,ParentsTranspose]),	
   check_amaf(Nodes,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-check_amaf(1,_NodeID,_,SigmoidValue,_ParentsTranspose):-
+check_amaf(1,_NodeID,_,_SigmoidValue,_ParentsTranspose):-
   retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)),
   Visited1 is Visited + 1,
   assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)),
@@ -549,7 +549,7 @@ check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
   Node1 is Node - 1,
   check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-check_amaf(Node,NodeID,Theory,_SigmoidValue,ParentsTranspose):-
+check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
   Node1 is Node - 1,
   check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
