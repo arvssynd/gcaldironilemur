@@ -239,8 +239,8 @@ modeb(*,ta(+course, +stu, +quarter)).
 
 %modeb(*,courselevel(+course, -level)).
 
-banned([advisedby(A,B)],[publication(C,B),publication(D,B)]).
-banned([advisedby(A,B)],[publication(C,A),publication(D,A)]).
+banned([advisedby(_A,B)],[publication(_C,B),publication(_D,B)]).
+banned([advisedby(A,_B)],[publication(_C,A),publication(_D,A)]).
 banned([advisedby(A,B)],[publication(C,A),publication(D,B), C \== D]).
 
 %lookahead(ta(_A,_B,_C),[taughtby(_A,_D,_C)]).

@@ -3229,7 +3229,7 @@ add_rule(add(SpecRule)):-
   generate_head(HLS,P,Head),
   get_next_rule_number(ID),
   Rule0 = rule(ID,Head,[],true),
-  specialize_rule(Rule0,SpecRule,Lit).
+  specialize_rule(Rule0,SpecRule,_Lit).
 
 
 generate_head([],_M,_Mod,HL,HL):-!.
@@ -3317,7 +3317,7 @@ specialize_theory(Theory,Ref):-
   choose_rule(Theory,Rule),
   specialize_rule(Rule,SpecRule,Lit),
   Ref = add_body(Rule,SpecRule,Lit),
-  SpecRule = rule(_,_,B,_).
+  SpecRule = rule(_,_,_B,_).
 
 
 specialize_rule(Rule,SpecRule,Lit):-
@@ -3365,7 +3365,7 @@ specialize_rule(Rule,SpecRule,Lit):-
   M:local_setting(specialization,mode),!,
   %findall(BL , modeb(_,BL), BLS),
   mcts_modeb(BSL0),
-  Rule = rule(ID,LH,BL,_),
+  Rule = rule(_ID,_LH,BL,_),
   ( BL \= [] ->
     %last(BL,LastLit),
     %LastLit =.. [Pred|_],
@@ -3380,7 +3380,7 @@ specialize_rule(Rule,SpecRule,Lit):-
 filter_modeb([],_Pred,[]).
 
 filter_modeb([Modeb|RestModeb],Pred,[Modeb|RestBSL]):-
-  Modeb =.. [PredMode|_],
+  Modeb =.. [_PredMode|_],
   Modeb @>= Pred,
   !,
   filter_modeb(RestModeb,Pred,RestBSL).
@@ -3467,7 +3467,7 @@ specialize_rule([Lit|_RLit],Rule,SpecRul,SLit):-
   length(Vars1,NV),
   M:local_setting(max_var,MV),
   NV=<MV,
-  M:local_setting(maxdepth_var,MD),	
+  M:local_setting(maxdepth_var,_MD),	
   \+ banned_clause(LH1,BL1),	
   SpecRul = rule(ID,LH,BL1,true).
 
@@ -3814,7 +3814,7 @@ depth_InputVars([I|Input],PrevDs,D0,D):-
   depth_InputVars(Input,PrevDs,D1,D).
      
 
-member_l([[L,D]|P],I,D):-   %resituisce in output la profondita della variabile I
+member_l([[L,D]|_P],I,D):-   %resituisce in output la profondita della variabile I
   I==L,!.
 
 member_l([_|P],I,D):-
