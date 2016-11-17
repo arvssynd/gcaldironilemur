@@ -483,7 +483,7 @@ check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 */
 
 
-backup_amaf(1,Reward,_):-
+backup_amaf(1,_Reward,_):-
   !,
   (retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
     true
@@ -525,12 +525,12 @@ backup_amaf(NodeID,Reward,ParentsTranspose):-
   %backup_amaf(Parent,Reward,ParentsTranspose).
 
 
-check_amaf(NodeID,Theory,SigmoidValue,ParentsTranspose):-
+check_amaf(_NodeID,Theory,_SigmoidValue,_ParentsTranspose):-
   lastid(Nodes),
   format("\nChecking amaf: node ~w, parents ~w: ",[NodeID,ParentsTranspose]),	
   check_amaf(Nodes,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-check_amaf(1,NodeID,_,SigmoidValue,ParentsTranspose):-
+check_amaf(1,_NodeID,_,SigmoidValue,_ParentsTranspose):-
   retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)),
   Visited1 is Visited + 1,
   assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)),
@@ -539,7 +539,7 @@ check_amaf(1,NodeID,_,SigmoidValue,ParentsTranspose):-
 check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
   Node \== NodeID,
   !,
-  node(Node, Childs, Parent , CLL, TheoryN, Visited, Backscore),
+  node(Node, _Childs, _Parent , _CLL, TheoryN, _Visited, _Backscore),
   ( subsume_theory(TheoryN,Theory) ->
     %format("\n\t ~w ~w: ",[TheoryN,Theory]),
     backup_amaf(Node,SigmoidValue,ParentsTranspose)
@@ -549,7 +549,7 @@ check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
   Node1 is Node - 1,
   check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
-check_amaf(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
+check_amaf(Node,NodeID,Theory,_SigmoidValue,ParentsTranspose):-
   Node1 is Node - 1,
   check_amaf(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
 
@@ -656,8 +656,8 @@ cycle_mcts(K,DB):-
   retract(mcts_iteration(_)),
   assert(mcts_iteration(Iteration)),
   format("\nIteration ~w",[Iteration]),
-  tree_policy(1,NodeID,DB,1,Depth),
-  ( node(NodeID, Childs, Parent , CLL, Theory, Visited, Backscore) ->
+  tree_policy(1,NodeID,DB,1,_Depth),
+  ( node(NodeID, _Childs, _Parent , _CLL, Theory, _Visited, _Backscore) ->
   % do update with the sigmoid of the Score
   % SigmoidValue is ((1 / (1 + exp(-PSLL)))/0.5),
   % format("\n~w: ~w ~w Sigmoid ~w",[K,MLN,PSLL,SigmoidValue]),	
@@ -696,6 +696,7 @@ cycle_mcts(K,DB):-
   ).
 
 
+/*
 check_pruning(ID):-
   input_mod(M),
   node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE),
@@ -744,6 +745,7 @@ add_visisted([ID|R],[V-ID|R1]):-
   node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE),
   V is -1 * VISITED,
   add_visisted(R,R1).
+*/
 
 
 prune([],_Childs1).
