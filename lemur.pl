@@ -394,6 +394,7 @@ mcts(InitialTheory,InitialScore,DB):-
   format("\nTree size: ~w nodes.",[Nodes]).
 
 
+/*
 print_graph:-
   filedot(FileDot),
   open(FileDot,write,S),
@@ -421,7 +422,7 @@ print_graph([ID|R],S):-
     true
   ),
   print_edges(ID,R,S).
-
+*/
 
 backup_transposition(1,Reward,_):-
   !,
