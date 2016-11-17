@@ -424,6 +424,8 @@ print_graph([ID|R],S):-
   print_edges(ID,R,S).
 */
 
+
+/*
 backup_transposition(1,Reward,_):-
   !,
   (retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
@@ -478,6 +480,7 @@ check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
 check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
   Node1 is Node - 1,
   check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
+*/
 
 
 backup_amaf(1,Reward,_):-
