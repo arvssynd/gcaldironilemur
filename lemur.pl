@@ -182,7 +182,7 @@ induce_rules(Folds,R):-
   assert(mcts_modeb(BSL)),
 
   assert(mcts_restart(1)),
-  learn_struct_mcts(DB,R1,R2,Score2),
+  learn_struct_mcts(DB,_R1,R2,Score2),
   retract(mcts_restart(_)),
   learn_params(DB,M,R2,R,Score),  
 
@@ -1336,96 +1336,6 @@ update_head_par([],[],[]).
 
 update_head_par([H:_P|T0],[HP|TP],[H:HP|T]):-
   update_head_par(T0,TP,T).
-
-  
-cycle_beam([],_DB,CL,CL,CLBG,CLBG,_M):-!.
-
-cycle_beam(_Beam,_DB,CL,CL,CLBG,CLBG,0):-!.
-
-cycle_beam(Beam,DB,CL0,CL,CLBG0,CLBG,M):-
-  format("Clause iteration ~d",[M]),nl,nl,
-  cycle_clauses(Beam,DB,[],NB,CL0,CL1,CLBG0,CLBG1),
-  M1 is M-1,%decreases the number of max_iter M
-  cycle_beam(NB,DB,CL1,CL,CLBG1,CLBG,M1).
-
-
-cycle_clauses([],_DB,NB,NB,CL,CL,CLBG,CLBG):-!.
-
-cycle_clauses([(RH,_ScoreH)|T],DB,NB0,NB,CL0,CL,CLBG0,CLBG):-
-  findall(RS,specialize_rule(RH,RS,_L),LR),!,   %-LR:list of lists, each one correponding to a different revised theory; specialize_rule defined in revise.pl
-  length(LR,NR),
-  write('Number of revisions '),write(NR),nl,
-  score_clause_refinements(LR,1,NR,DB,NB0,NB1,CL0,CL1,CLBG0,CLBG1),
-  cycle_clauses(T,DB,NB1,NB,CL1,CL,CLBG1,CLBG).
-
-
-score_clause_refinements([],_N,_NR,_DB,NB,NB,CL,CL,CLBG,CLBG).
-
-score_clause_refinements([R1|T],Nrev,NRef,DB,NB0,NB,CL0,CL,CLBG0,CLBG):-  %scans the list of revised theories
-  input_mod(M),
-  already_scored_clause(R1,R3,Score),!,
-  format('Score ref.  ~d of ~d~n',[Nrev,NRef]),
-  write('Already scored, updated refinement'),nl,
-  write_rules([R3],user_output), 
-  write('Score '),write(Score),nl,nl,nl,
-  M:local_setting(beamsize,BS),
-  insert_in_order(NB0,(R3,Score),BS,NB1),
-  Nrev1 is Nrev+1,  
-  score_clause_refinements(T,Nrev1,NRef,DB,NB1,NB,CL0,CL,CLBG0,CLBG).
-
-score_clause_refinements([R1|T],Nrev,NRef,DB,NB0,NB,CL0,CL,CLBG0,CLBG):- 
-  input_mod(M),
-  format('Score ref.  ~d of ~d~n',[Nrev,NRef]),
-  write_rules([R1],user_output),   
-  generate_clauses_cw([R1],[R2],0,[],Th1),
-  assert_all(Th1),
-  assert_all([R2]),!,
-  findall(RN-HN,(rule(RN,HL,_BL,_Lit),length(HL,HN)),L),  
-  keysort(L,LS),
-  get_heads(LS,LSH),
-  length(LSH,NR),
-  init(NR,LSH),
-  retractall(v(_,_,_)),
-  length(DB,NEx),
-  get_output_preds(R1,O),
-  (M:local_setting(examples,atoms)->
-    M:local_setting(group,G),  
-    derive_bdd_nodes_groupatoms_output_atoms(DB,O,NEx,G,[],Nodes,0,CLL0,LE,[]),!
-  ; 
-    derive_bdd_nodes(DB,NEx,[],Nodes,0,CLL0),!
-  ),
-  format("Initial CLL ~f~n",[CLL0]),
-  M:local_setting(random_restarts_REFnumber,N),
-  random_restarts_ref(N,Nodes,CLL0,Score,initial,Par,LE),  
-  end,
-  update_theory([R2],Par,[R3]),
-  write('Updated refinement'),nl,
-  write_rules([R3],user_output), 
-  write('Score (CLL) '),write(Score),nl,nl,nl,
-  retract_all(Th1),
-  retract_all([R2]),!,
-  M:local_setting(beamsize,BS),
-  insert_in_order(NB0,(R3,Score),BS,NB1),
-  (target(R3)->
-    insert_in_order(CL0,(R3,Score),1e20,CL1),
-    length(CL1,LCL1),
-    format("N. of target clauses ~d~n~n",[LCL1]),
-    CLBG1=CLBG0
-  ;
-    (range_restricted(R3)->
-      insert_in_order(CLBG0,(R3,Score),1e20,CLBG1),
-      length(CLBG1,LCL1),
-      format("N. of background clauses ~d~n~n",[LCL1]),
-      CL1=CL0
-    ;
-      format("Not range restricted~n~n",[]),
-      CL1=CL0,
-      CLBG1=CLBG0
-    )
-  ),
-  store_clause_refinement(R1,R3,Score),
-  Nrev1 is Nrev+1,  
-  score_clause_refinements(T,Nrev1,NRef,DB,NB1,NB,CL1,CL,CLBG1,CLBG).
 
 
 range_restricted(rule(_N,HL,BL,_Lit)):-
