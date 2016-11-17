@@ -773,6 +773,7 @@ prune_sub_tree1([ID|R]):-
   prune_sub_tree1(R).
 
 
+/*
 check_pruning1([],_NumVisits,1,[]).
 
 check_pruning1([ID|R],NumVisits,ToPrune,[ID|R1]):-
@@ -789,7 +790,7 @@ check_pruning1([ID|R],NumVisits,ToPrune,[ID|R1]):-
 
 check_pruning1([ID|R],NumVisits,ToPrune,R1):-
   check_pruning1(R,NumVisits,ToPrune,R1).
-	
+*/
 
 tree_policy(ID,NodeID,DB,Od,Nd):-
   input_mod(M),
@@ -874,7 +875,7 @@ tree_policy(ID,NodeID,DB,Od,Nd):-
   ).
 
 
-default_policy(Theory, Reward, Reward, BestDefaultTheory,BestDefaultTheory,DB, Depth, MaxDepth):-
+default_policy(_Theory, Reward, Reward, BestDefaultTheory,BestDefaultTheory,_DB, Depth, MaxDepth):-
   Depth > MaxDepth,
   !.
 
