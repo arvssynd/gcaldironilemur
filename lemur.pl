@@ -1045,7 +1045,7 @@ mean_value_level1([C|R],[M|Rm]):-
 uct(Childs, ParentVisits, Min, Max, BestChild):-
   input_mod(M),
   Childs = [FirstChild|RestChilds],
-  node(FirstChild, _, _ , Score, Theory, Visits, Reward),
+  node(FirstChild, _, _ , _Score, _Theory, Visits, Reward),
   ( Visits == 0 ->
     BestChild = FirstChild
   ;
@@ -1074,7 +1074,7 @@ uct([], _CurrentBestUCT, _ParentVisits, BestChild, _, _,BestChild).
 
 uct([Child|RestChilds], CurrentBestUCT, ParentVisits, CurrentBestChild, Min, Max,BestChild) :-
   input_mod(M),
-  node(Child, _, _ , Score, Theory, Visits, Reward),
+  node(Child, _, _ , _Score, _Theory, Visits, Reward),
   ( Visits == 0 ->
     BestChild = Child
   ;
@@ -1244,7 +1244,7 @@ score_theory(Theory0,DB,Score,Theory,R3):-
   !.
 
 
-backup(1,Reward,[]):-
+backup(1,_Reward,[]):-
   !.
 
 backup(NodeID,Reward,[Parent|R]):-
@@ -2965,7 +2965,6 @@ get_probs([_H:P|T], [P1|T1]) :-
 generate_clauses_cw([],[],_N,C,C):-!.
 
 generate_clauses_cw([H|T],[H1|T1],N,C0,C):-
-  input_mod(M),
   gen_clause_cw(H,N,N1,H1,CL),!,  %agg.cut
   append(C0,CL,C1),
   generate_clauses_cw(T,T1,N1,C1,C).
@@ -3114,6 +3113,7 @@ theory_revisions_op(Theory,TheoryRevs):-
 theory_revisions_op(_Theory,[]).
 
 
+/*
 filter_add_rule([],[]).
 
 filter_add_rule([add(Rule)|R],R1):-
@@ -3123,7 +3123,7 @@ filter_add_rule([add(Rule)|R],R1):-
 filter_add_rule([A|R],[A|R1]):-
   !,
   filter_add_rule(R,R1).
-
+*/
 
 theory_revisions_r(Theory,TheoryRevs):-
   theory_revisions_op(Theory,TheoryRevs1),
@@ -3196,12 +3196,13 @@ generalize_theory(Theory,Ref):-
   add_rule(Ref).
 
 
+/*
 generalize_rule(Rule,Ref):-
   generalize_head(Rule,Ref).
 
 generalize_rule(Rule,Ref):-
   generalize_body(Rule,Ref).
-
+*/
 
 add_rule(add(rule(ID,Head,[],Lits))):-
   input_mod(M),
