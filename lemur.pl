@@ -1762,48 +1762,6 @@ generate_file_name(File,Ext,FileExt):-
   name(FileExt,FileStringExt).
    
 
-load_models(File,ModulesList):-  %carica le interpretazioni, 1 alla volta
-  open(File,read,Stream),
-  read_models(Stream,ModulesList),
-  close(Stream).
-
-
-read_models(Stream,[Name1|Names]):-
-  read(Stream,begin(model(Name))),!,
-  (number(Name)->
-     name(Name,NameStr),
-     append("i",NameStr,Name1Str),
-     name(Name1,Name1Str)
-  ;
-     Name1=Name
-  ),
-  read_all_atoms(Stream,Name1),
-  read_models(Stream,Names).
-
-read_models(_S,[]).
-
-
-read_all_atoms(Stream,Name):-
-  read(Stream,At),
-  At \=end(model(_Name)),!,
-  (At=neg(Atom)->    
-    Atom=..[Pred|Args],
-    Atom1=..[Pred,Name|Args],
-    assertz(neg(Atom1))
-  ;
-    (At=prob(Pr)->
-      assertz(prob(Name,Pr))
-    ;
-      At=..[Pred|Args],
-      Atom1=..[Pred,Name|Args],
-      assertz(Atom1)
-    )
-  ),
-  read_all_atoms(Stream,Name).    
-
-read_all_atoms(_S,_N).
-
-
 write_param(initial,S):-!,
   format("~nInitial parameters~n",[]),
   findall(rule(R,H,B,Lit),rule(R,H,B,Lit),LDis),
