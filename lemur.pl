@@ -116,7 +116,7 @@ default_setting_lm(depth_bound,false).  %if true, it limits the derivation of th
 default_setting_lm(depth,2).
 default_setting_lm(single_var,false). %false:1 variable for every grounding of a rule; true: 1 variable for rule (even if a rule has more groundings),simpler.
 
-:- thread_local v/3, input_mod/1, local_setting/2, rule_sc_n/1.
+:- thread_local database/1, mcts_modeb/1, mcts_restart/1, mcts_best_score/1, mcts_best_theory/1, mcts_theories/1, mcts_best_theories_iteration/1, node/7, lastid/1, mcts_iteration/1, v/3, rule_sc_n/1, input_mod/1, local_setting/2, in_on/0, in/1, model/1, int/1.
 
 /** 
  * induce(+TrainFolds:list_of_atoms,-P:probabilistic_program) is det
@@ -1382,10 +1382,11 @@ scan_head([H:_P|T],O0,O):-
   ),
   scan_head(T,O1,O).
 
-
+/*
 store_clause_refinement(Ref,RefP,Score):-
   elab_clause_ref(Ref,Ref1),
   recorda(ref_clause,r(Ref1,RefP,Score),_).
+
 
 
 store_refinement(Ref,RefP,Score):-
@@ -1419,7 +1420,7 @@ elab_ref([def_rule(H,B,_Lits)|T],[rule(H1,B1)|T1]):-
   copy_term((H,B),(H1,B1)),
   numbervars((H1,B1),0,_N),
   elab_ref(T,T1).
-
+*/
 
 %insertion in the beam
 insert_in_order([],C,BeamSize,[C]):-
@@ -3383,6 +3384,7 @@ mysublist([H|T],L):-
   mysublist(T,R).
 
 
+/*
 check_ref(H,B):-
   copy_term((H,B),(H1,B1)),
   numbervars((H1,B1),0,_N),
@@ -3391,7 +3393,7 @@ check_ref(H,B):-
   ;
     assert(ref(H1,B1))
   ).
-
+*/
 
 specialize_rule([Lit|_RLit],Rule,SpecRul,SLit):-
   input_mod(M),
