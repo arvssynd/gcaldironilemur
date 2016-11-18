@@ -340,6 +340,7 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   */
 
 
+/*
 select_the_best_bycll:-
   node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
   ( VISITED >= 0 ->
@@ -378,7 +379,7 @@ select_the_best_byvisits:-
   ),
   fail.
   select_the_best_byvisits.
-
+*/
 
 mcts(InitialTheory,InitialScore,DB):-
   % node(ID, CHILDRENS, PARENT, CLL, Theory, VISITED, BACKSCORE)
@@ -1498,6 +1499,7 @@ get_node_list([H|T],BDD0,BDD,CE):-
   get_node_list(T,BDD2,BDD,CE).
 
 
+/*
 derive_bdd_nodes_groupatoms_output_atoms([],_O,_E,_G,Nodes,Nodes,CLL,CLL,LE,LE).
 
 derive_bdd_nodes_groupatoms_output_atoms([H|T],O,E,G,Nodes0,Nodes,CLL0,CLL,LE0,LE):-  
@@ -1511,7 +1513,7 @@ derive_bdd_nodes_groupatoms_output_atoms([H|T],O,E,G,Nodes0,Nodes,CLL0,CLL,LE0,L
   get_node_list_groupatoms(GL,BDDs,CardEx,G,CLL0,CLL1,LE0,LE1),
   append(Nodes0,BDDs,Nodes1),
   derive_bdd_nodes_groupatoms_output_atoms(T,O,E,G,Nodes1,Nodes,CLL1,CLL,LE1,LE).
-
+*/
  
 derive_bdd_nodes_groupatoms([],_M,_ExData,_E,_G,Nodes,Nodes,CLL,CLL,LE,LE).
 
