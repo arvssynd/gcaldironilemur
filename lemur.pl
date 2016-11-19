@@ -340,47 +340,6 @@ learn_params(DB,M,R0,R,Score):-  %Parameter Learning
   */
 
 
-/*
-select_the_best_bycll:-
-  node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
-  ( VISITED >= 0 ->
-    mcts_best_by_cll(BS),
-    Score is CLL,
-    ( Score =< 0, Score >= BS ->
-      format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
-      retract(mcts_best_by_cll(_)),
-      assert(mcts_best_by_cll(Score)),
-      retract(mcts_best_theory_by_cll(_)),
-      assert(mcts_best_theory_by_cll(Theory))
-    ;
-      true
-    )
-  ;
-    true
-  ),
-  fail.
-  select_the_best_bycll.
-
-
-select_the_best_byvisits:-
-  node(_, _, _, CLL, Theory, VISITED, BACKSCORE),
-  ( VISITED >= 0 ->
-    mcts_best_by_visits(BS),
-    Score is VISITED,
-    ( Score >= BS ->
-      format("\n Best Theory ~w\n\t Backscore ~w\n\t Visits ~w\n\t CLL ~w",[Theory,BACKSCORE,VISITED,CLL]),
-      retract(mcts_best_by_visits(_)),
-      assert(mcts_best_by_visits(Score))
-    ;
-      true
-    )
-  ;
-    true
-  ),
-  fail.
-  select_the_best_byvisits.
-*/
-
 mcts(InitialTheory,InitialScore,DB):-
   % node(ID, CHILDRENS, PARENT, CLL, Theory, VISITED, BACKSCORE)
   input_mod(M),
@@ -393,95 +352,6 @@ mcts(InitialTheory,InitialScore,DB):-
   retract(lastid(Nodes)),
   %print_graph,	
   format("\nTree size: ~w nodes.",[Nodes]).
-
-
-/*
-print_graph:-
-  filedot(FileDot),
-  open(FileDot,write,S),
-  format(S,"digraph UCT{\n",[]),
-  format(S,"graph [splines=line];\n",[]),
-  format(S,"edge [dir=\"none\"];\n",[]),
-  format(S,"node [style=\"filled\",label=\"\",shape=point];\n",[]),
-	
-  print_graph([1],S),
-  format(S,"}",[]),
-  close(S).
-
-print_graph([ID|R],S):-
-  node(ID, Childs, Parent , CLL, Theory, Visited, Backscore),
-  print_edges(ID,Childs,S),
-  print_graph(R,S),
-  print_graph(Childs,S).
-  print_edges(ID,[],S):-!.
-  print_edges(ID,[ID1|R],S):-
-  node(ID1, Childs, Parent , CLL, Theory, Visited, Backscore),
-  (Visited > 1 ->
-    format(S,"~w -> ~w;\n",[ID,ID1])
-    %format(S,"~w [label=\"~w,~w\"] ;\n",[ID1,ID1,Visited])
-  ;
-    true
-  ),
-  print_edges(ID,R,S).
-*/
-
-
-/*
-backup_transposition(1,Reward,_):-
-  !,
-  (retract(node(1, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
-    true
-  ;
-    format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
-    throw(no_node_id(NodeID))
-  ),
-  Visited1 is Visited + 1,
-  assert(node(1, Childs, Parent , PSLL, MLN, Visited1, Backscore)).	
-
-backup_transposition(NodeID,Reward,ParentsTranspose):-
-  (retract(node(NodeID, Childs, Parent , PSLL, MLN, Visited, Backscore)) ->
-    true
-  ;
-    format(user_error,"\nNo node with ID ~w in backup",[NodeID]),	 
-    throw(no_node_id(NodeID))
-  ),
-  (member(NodeID,ParentsTranspose) -> 
-    Backscore1 is Backscore,
-    Visited1 is Visited,
-    format("~w- ",[NodeID])	 
-  ;
-    (Visited == 1 -> Backscore1 = Reward ; Backscore1 is Backscore + Reward),	 
-    Visited1 is Visited + 1,
-    format("~w+ ",[NodeID])
-  ),
-  assert(node(NodeID, Childs, Parent , PSLL, MLN, Visited1, Backscore1)),
-  backup_transposition(Parent,Reward,ParentsTranspose).
-
-
-check_transposition(NodeID,Theory,SigmoidValue,ParentsTranspose):-
-  lastid(Nodes),
-  check_transposition(Nodes,NodeID,Theory,SigmoidValue,ParentsTranspose).
-
-check_transposition(1,NodeID,_,SigmoidValue,ParentsTranspose):-
-  !.
-
-check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
-  Node \== NodeID,
-  !,
-  node(Node, Childs, Parent , CLL, TheoryN, Visited, Backscore),
-  ( same_theory(Theory,TheoryN) ->
-    format("\n\tTransposition node ~w - node ~w ~w: ",[Node,NodeID,ParentsTranspose]),
-    backup_transposition(Node,SigmoidValue,ParentsTranspose)
-  ;
-    true
-  ),
-  Node1 is Node - 1,
-  check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
-
-check_transposition(Node,NodeID,Theory,SigmoidValue,ParentsTranspose):-
-  Node1 is Node - 1,
-  check_transposition(Node1,NodeID,Theory,SigmoidValue,ParentsTranspose).
-*/
 
 
 backup_amaf(1,_Reward,_):-
@@ -560,20 +430,6 @@ subsume_theory(Theory,TheoryN):-
   skolemize(TheoryN,TheoryN1),	
   subsume_theory1(Theory1,TheoryN1),
   !.
-
-  /*
-  skolemize(Theory,Theory1):-
-  copy_term(Theory,Theory1),
-  term_variables(Theory1,Vars),
-  skolemize1(Vars,1).
-
-  skolemize1([],_).
-  skolemize1([Var|R],K):-
-  atomic_list_concat([s,K],Skolem),
-  Var = Skolem,
-  K1 is K + 1,
-  skolemize1(R,K1).
-  */
 
 
 subsume_theory1([],_).
@@ -697,58 +553,6 @@ cycle_mcts(K,DB):-
   ).
 
 
-/*
-check_pruning(ID):-
-  input_mod(M),
-  node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE),
-  Childs \== [],
-  length(Childs,NumChilds),
-  M:local_setting(mcts_beamsize,BeamSize),
-  NumChilds > BeamSize,
-  !,
-  M:local_setting(mcts_visits,NumVisits),
-  check_pruning(Childs,ID,NumVisits,BeamSize,NewChilds),
-  retract(node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE)),
-  assert(node(ID, NewChilds, Parent , CLL, Theory, VISITED, BACKSCORE)).
-
-check_pruning(_ID).	
-
-check_pruning(Childs,ID,NumVisits,BeamSize,Childs2):-
-  check_pruning1(Childs,NumVisits,ToPrune,Childs1),
-  length(Childs1,L1),
-  L1 > BeamSize,
-  ToPrune == 1,
-  !,
-  choose_best_childs(Childs1,BeamSize,Childs2),
-  format("\n#Pruning tree ~w ~w",[ID,Childs2]),flush_output,
-  prune(Childs,Childs2).
-
-check_pruning(Childs,_,_NumVisits,_BeamSize,Childs).
-
-
-choose_best_childs(Childs,BeamSize,Childs1):-
-  add_visisted(Childs,ChildsV),
-  keysort(ChildsV,ChildsV1),
-  remove_visisted(ChildsV1,ChildsV2),
-  length(Childs1,BeamSize),
-  append(Childs1,_,ChildsV2),!.
-
-
-remove_visisted([],[]).
-
-remove_visisted([V-ID|R],[ID|R1]):-
-  remove_visisted(R,R1).
-
-
-add_visisted([],[]).
-
-add_visisted([ID|R],[V-ID|R1]):-
-  node(ID, Childs, Parent , CLL, Theory, VISITED, BACKSCORE),
-  V is -1 * VISITED,
-  add_visisted(R,R1).
-*/
-
-
 prune([],_Childs1).
 
 prune([ID|R],Childs1):-
@@ -773,25 +577,6 @@ prune_sub_tree1([ID|R]):-
   prune_sub_tree1(Childs),
   prune_sub_tree1(R).
 
-
-/*
-check_pruning1([],_NumVisits,1,[]).
-
-check_pruning1([ID|R],NumVisits,ToPrune,[ID|R1]):-
-  node(ID, _Childs, _Parent , CLL, _Theory, VISITED, _BACKSCORE),
-  (CLL == 1 ->
-    ToPrune = 0,
-    R1 = [],
-    !
-  ;
-    VISITED >= NumVisits,
-    !,
-    check_pruning1(R,NumVisits,ToPrune,R1)
-  ).
-
-check_pruning1([ID|R],NumVisits,ToPrune,R1):-
-  check_pruning1(R,NumVisits,ToPrune,R1).
-*/
 
 tree_policy(ID,NodeID,DB,Od,Nd):-
   input_mod(M),
@@ -1382,45 +1167,6 @@ scan_head([H:_P|T],O0,O):-
   ),
   scan_head(T,O1,O).
 
-/*
-store_clause_refinement(Ref,RefP,Score):-
-  elab_clause_ref(Ref,Ref1),
-  recorda(ref_clause,r(Ref1,RefP,Score),_).
-
-
-
-store_refinement(Ref,RefP,Score):-
-  elab_ref(Ref,Ref1),
-  recorda(ref,r(Ref1,RefP,Score),_).
-
-
-already_scored_clause(R,R1,Score):-
-  elab_ref([R],[rule(H,B)]),
-  recorded(ref_clause,r(rule(H,B1),R1,Score),_),
-  permutation(B,B1).
-
-
-already_scored(R,R1,Score):-
-  elab_ref(R,RR),
-  recorded(ref,r(RR,R1,Score),_).
-
-
-elab_clause_ref(rule(_NR,H,B,_Lits),rule(H1,B1)):-
-  copy_term((H,B),(H1,B1)).
-
-
-elab_ref([],[]).
-
-elab_ref([rule(_NR,H,B,_Lits)|T],[rule(H1,B1)|T1]):-
-  copy_term((H,B),(H1,B1)),
-  numbervars((H1,B1),0,_N),
-  elab_ref(T,T1).
-
-elab_ref([def_rule(H,B,_Lits)|T],[rule(H1,B1)|T1]):-
-  copy_term((H,B),(H1,B1)),
-  numbervars((H1,B1),0,_N),
-  elab_ref(T,T1).
-*/
 
 %insertion in the beam
 insert_in_order([],C,BeamSize,[C]):-
@@ -1499,22 +1245,6 @@ get_node_list([H|T],BDD0,BDD,CE):-
   and(BDD0,BDD1,BDD2),
   get_node_list(T,BDD2,BDD,CE).
 
-
-/*
-derive_bdd_nodes_groupatoms_output_atoms([],_O,_E,_G,Nodes,Nodes,CLL,CLL,LE,LE).
-
-derive_bdd_nodes_groupatoms_output_atoms([H|T],O,E,G,Nodes0,Nodes,CLL0,CLL,LE0,LE):-  
-  generate_goal(O,H,[],GL),
-  length(GL,NA),
-  (prob(H,P)->
-    CardEx is P*E/NA
-  ;
-    CardEx is 1.0
-  ),
-  get_node_list_groupatoms(GL,BDDs,CardEx,G,CLL0,CLL1,LE0,LE1),
-  append(Nodes0,BDDs,Nodes1),
-  derive_bdd_nodes_groupatoms_output_atoms(T,O,E,G,Nodes1,Nodes,CLL1,CLL,LE1,LE).
-*/
  
 derive_bdd_nodes_groupatoms([],_M,_ExData,_E,_G,Nodes,Nodes,CLL,CLL,LE,LE).
 
@@ -1850,26 +1580,6 @@ write_body(S,[A]):-!,
 write_body(S,[A|T]):-
   format(S,"\t~p,~n",[A]),
   write_body(S,T).
-
-
-/*
-list2or([],true):-!.
-
-list2or([X],X):-
-    X\=;(_,_),!.
-
-list2or([H|T],(H ; Ta)):-!,
-    list2or(T,Ta).
-
-
-list2and([],true):-!.
-
-list2and([X],X):-
-    X\=(_,_),!.
-
-list2and([H|T],(H,Ta)):-!,
-    list2and(T,Ta).
-*/
 
 
 deduct(0,_Mod,_DB,Th,Th):-!.
@@ -2816,28 +2526,6 @@ extract_vars_tree([Term|Tail], Var0, Var1) :-
   extract_vars_term(Term, Var0, Var), 
   extract_vars_tree(Tail, Var, Var1).
 
-/*
-extract_vars(Variable, Var0, Var1) :- 
-  var(Variable), !, 
-  (member_eq(Variable, Var0) ->
-    Var1 = Var0
-  ;
-    Var1=[Variable| Var0]
-  ).
-
-extract_vars(Term, Var0, Var1) :- 
-  Term=..[_F|Args], 
-  extract_vars_list(Args, Var0, Var1).
-
-
-
-extract_vars_list([], Var, Var).
-
-extract_vars_list([Term|Tail], Var0, Var1) :- 
-  extract_vars(Term, Var0, Var), 
-  extract_vars_list(Tail, Var, Var1).
-*/
-
 
 difference([],_,[]).
 
@@ -3074,18 +2762,6 @@ theory_revisions_op(Theory,TheoryRevs):-
 theory_revisions_op(_Theory,[]).
 
 
-/*
-filter_add_rule([],[]).
-
-filter_add_rule([add(Rule)|R],R1):-
-  !,
-  filter_add_rule(R,R1).
-
-filter_add_rule([A|R],[A|R1]):-
-  !,
-  filter_add_rule(R,R1).
-*/
-
 theory_revisions_r(Theory,TheoryRevs):-
   theory_revisions_op(Theory,TheoryRevs1),
   %filter_add_rule(TheoryRevs11,TheoryRevs1),
@@ -3156,14 +2832,6 @@ generalize_theory(Theory,Ref):-
   LT<MR,
   add_rule(Ref).
 
-
-/*
-generalize_rule(Rule,Ref):-
-  generalize_head(Rule,Ref).
-
-generalize_rule(Rule,Ref):-
-  generalize_body(Rule,Ref).
-*/
 
 add_rule(add(rule(ID,Head,[],Lits))):-
   input_mod(M),
@@ -3383,17 +3051,6 @@ mysublist([H|T],L):-
   nth1(_,L,H,R),
   mysublist(T,R).
 
-
-/*
-check_ref(H,B):-
-  copy_term((H,B),(H1,B1)),
-  numbervars((H1,B1),0,_N),
-  (ref(H1,B1)->
-    fail
-  ;
-    assert(ref(H1,B1))
-  ).
-*/
 
 specialize_rule([Lit|_RLit],Rule,SpecRul,SLit):-
   input_mod(M),
