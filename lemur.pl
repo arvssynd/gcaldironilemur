@@ -26,7 +26,7 @@
  **************************************/
 
 :-module(lemur,[set_lm/2,setting_lm/2,
-  induce_lm/2,
+  induce_lm/2, sample/4,
   op(500,fx,#),op(500,fx,'-#')]).
 
 /*slipcover_lemur.pl declarations start*/
@@ -3702,7 +3702,7 @@ user:term_expansion((:- lemur), []) :-!,
     bg_on/0,bg/1,bgc/1,in_on/0,in/1,inc/1,int/1)),
   style_check(-discontiguous).
 
-/*
+
 user:term_expansion((:- begin_bg), []) :-
   input_mod(M),!,
   assert(M:bg_on).
@@ -3724,7 +3724,6 @@ user:term_expansion((:- end_bg), []) :-
   ;
     assert(M:bg(L))
   ).
-*/
 
 user:term_expansion((:- begin_in), []) :-
   input_mod(M),!,
