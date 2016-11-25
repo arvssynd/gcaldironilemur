@@ -3777,4 +3777,11 @@ user:term_expansion(At, A) :-
     )
 	).
 
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(slipcover:induce_lm(_,_)).
+%sandbox:safe_primitive(slipcover:induce(_,_)).
+%sandbox:safe_primitive(slipcover:test(_,_,_,_,_,_,_)).
+%sandbox:safe_primitive(slipcover:test_prob(_,_,_,_,_,_)).
+sandbox:safe_primitive(slipcover:set_lm(_,_)).
 

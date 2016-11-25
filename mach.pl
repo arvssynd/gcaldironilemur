@@ -14,7 +14,8 @@ https://dtai.cs.kuleuven.be/static/ACE/doc/
 ?- induce([train],P),test(P,[test],LL,AUCROC,ROC,AUCPR,PR).
 ?- induce([rand_train],P),test(P,[rand_test],LL,AUCROC,ROC,AUCPR,PR).
 */
-:-use_module(lemur).
+%:-use_module(lemur).
+:-use_module(library(lemur)).
 
 :- if(current_predicate(use_rendering/1)).
 :- use_rendering(c3).
@@ -237,11 +238,4 @@ worn(wheel).
 worn(gear).
 end(model(15)).
 
-:- multifile sandbox:safe_primitive/1.
-
-sandbox:safe_primitive(slipcover:induce_lm(_,_)).
-sandbox:safe_primitive(slipcover:induce(_,_)).
-sandbox:safe_primitive(slipcover:test(_,_,_,_,_,_,_)).
-sandbox:safe_primitive(slipcover:test_prob(_,_,_,_,_,_)).
-sandbox:safe_primitive(slipcover:set_lm(_,_)).
 
